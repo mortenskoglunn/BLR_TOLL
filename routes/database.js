@@ -4,7 +4,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Søk etter blomst i database
+// Søk etter produkt i database (oppdatert for products-tabellen)
 router.get('/search', authenticateToken, async (req, res) => {
   try {
     const { blomst } = req.query;
@@ -16,38 +16,38 @@ router.get('/search', authenticateToken, async (req, res) => {
       });
     }
 
-    console.log(`🔍 Søker etter blomst: "${blomst}" av bruker: ${req.user.username}`);
+    console.log(`🔍 Søker etter produkt: "${blomst}" av bruker: ${req.user.username}`);
 
-    // Prøv først stored procedure hvis den eksisterer
-    let searchResult = await executeStoredProcedure('dbo.SearchBlomster', { SearchTerm: blomst });
-    
-    // Hvis stored procedure ikke fungerer, bruk vanlig SQL
-    if (!searchResult.success) {
-      console.log('Stored procedure ikke tilgjengelig, bruker vanlig SQL søk...');
-      
-      searchResult = await query(`
-        SELECT 
-          id, navn, vekt, klassifisering, beskrivelse, synonymer, opprinnelse, 
-          pris_per_kg, kvalitetsgrad, sesong, leverandor,
-          CASE 
-            WHEN navn = @blomst THEN 1
-            WHEN navn LIKE @blomstStart THEN 2
-            WHEN navn LIKE @blomstContains THEN 3
-            WHEN synonymer LIKE @blomstContains THEN 4
-            ELSE 5
-          END as relevance_score
-        FROM dbo.blomster 
-        WHERE 
-          navn LIKE @blomstContains
-          OR synonymer LIKE @blomstContains
-          OR beskrivelse LIKE @blomstContains
-        ORDER BY relevance_score, navn
-      `, {
-        blomst: blomst,
-        blomstStart: blomst + '%',
-        blomstContains: '%' + blomst + '%'
-      });
-    }
+    // Søk i products-tabellen
+    const searchResult = await query(`
+      SELECT 
+        id, Søkenavn, Art1, Art2, Art3, Tar1, Tar2, Tar3,
+        Kat, EmmaNavn, Notat, [HS Toll NÅ] as HSTollNaa,
+        CASE 
+          WHEN Søkenavn = @search THEN 1
+          WHEN Søkenavn LIKE @searchStart THEN 2
+          WHEN Søkenavn LIKE @searchContains THEN 3
+          WHEN Art1 LIKE @searchContains THEN 4
+          WHEN Art2 LIKE @searchContains THEN 4
+          WHEN Tar1 LIKE @searchContains THEN 5
+          ELSE 6
+        END as relevance_score
+      FROM dbo.products 
+      WHERE 
+        Søkenavn LIKE @searchContains
+        OR Art1 LIKE @searchContains
+        OR Art2 LIKE @searchContains
+        OR Art3 LIKE @searchContains
+        OR Tar1 LIKE @searchContains
+        OR Tar2 LIKE @searchContains
+        OR EmmaNavn LIKE @searchContains
+        OR Notat LIKE @searchContains
+      ORDER BY relevance_score, Søkenavn
+    `, {
+      search: blomst,
+      searchStart: blomst + '%',
+      searchContains: '%' + blomst + '%'
+    });
 
     if (!searchResult.success) {
       throw new Error('Database søk feilet: ' + searchResult.error);
@@ -55,7 +55,7 @@ router.get('/search', authenticateToken, async (req, res) => {
 
     if (searchResult.data.length > 0) {
       const bestMatch = searchResult.data[0];
-      const alternativeMatches = searchResult.data.slice(1, 5); // Top 4 alternative matches
+      const alternativeMatches = searchResult.data.slice(1, 5);
       
       console.log(`✅ Fant ${searchResult.data.length} treff for "${blomst}"`);
       
@@ -64,23 +64,20 @@ router.get('/search', authenticateToken, async (req, res) => {
         searchTerm: blomst,
         bestMatch: {
           id: bestMatch.id,
-          navn: bestMatch.navn,
-          vekt: parseFloat(bestMatch.vekt),
-          klassifisering: bestMatch.klassifisering,
-          beskrivelse: bestMatch.beskrivelse,
-          synonymer: bestMatch.synonymer,
-          opprinnelse: bestMatch.opprinnelse,
-          pris_per_kg: bestMatch.pris_per_kg ? parseFloat(bestMatch.pris_per_kg) : null,
-          kvalitetsgrad: bestMatch.kvalitetsgrad,
-          sesong: bestMatch.sesong,
-          leverandor: bestMatch.leverandor,
+          søkenavn: bestMatch.Søkenavn,
+          art1: bestMatch.Art1,
+          art2: bestMatch.Art2,
+          tar1: bestMatch.Tar1,
+          kat: bestMatch.Kat,
+          emmaNavn: bestMatch.EmmaNavn,
+          hsTollNaa: bestMatch.HSTollNaa,
           relevance_score: bestMatch.relevance_score || 1
         },
         alternativeMatches: alternativeMatches.map(match => ({
           id: match.id,
-          navn: match.navn,
-          vekt: parseFloat(match.vekt),
-          klassifisering: match.klassifisering,
+          søkenavn: match.Søkenavn,
+          art1: match.Art1,
+          tar1: match.Tar1,
           relevance_score: match.relevance_score || 5
         })),
         totalMatches: searchResult.data.length
@@ -88,12 +85,12 @@ router.get('/search', authenticateToken, async (req, res) => {
     } else {
       console.log(`❌ Ingen treff for "${blomst}"`);
       
-      // Søk etter lignende blomster (fuzzy matching)
+      // Søk etter lignende produkter
       const similarResult = await query(`
-        SELECT TOP 5 navn, vekt, klassifisering 
-        FROM dbo.blomster 
-        WHERE navn LIKE @fuzzy
-        ORDER BY LEN(navn)
+        SELECT TOP 5 Søkenavn, Art1, Tar1 
+        FROM dbo.products 
+        WHERE Søkenavn LIKE @fuzzy
+        ORDER BY LEN(Søkenavn)
       `, {
         fuzzy: '%' + blomst.substring(0, Math.max(3, blomst.length - 2)) + '%'
       });
@@ -101,7 +98,7 @@ router.get('/search', authenticateToken, async (req, res) => {
       res.json({
         found: false,
         searchTerm: blomst,
-        suggestions: similarResult.success ? similarResult.data.map(s => s.navn) : [],
+        suggestions: similarResult.success ? similarResult.data.map(s => s.Søkenavn) : [],
         message: `Ingen eksakt match for "${blomst}". Prøv med noen av forslagene eller legg til manuelt.`
       });
     }
@@ -116,7 +113,7 @@ router.get('/search', authenticateToken, async (req, res) => {
   }
 });
 
-// Batch søk for flere blomster
+// Batch søk for flere produkter
 router.post('/batch-search', authenticateToken, async (req, res) => {
   try {
     const { blomster } = req.body;
@@ -138,36 +135,35 @@ router.post('/batch-search', authenticateToken, async (req, res) => {
     if (blomster.length > 100) {
       return res.status(400).json({ 
         error: 'For mange elementer',
-        message: 'Maksimalt 100 blomster per batch søk' 
+        message: 'Maksimalt 100 produkter per batch søk' 
       });
     }
 
-    console.log(`🔍 Batch søk for ${blomster.length} blomster av bruker: ${req.user.username}`);
+    console.log(`🔍 Batch søk for ${blomster.length} produkter av bruker: ${req.user.username}`);
 
     const results = [];
     let foundCount = 0;
 
-    for (const blomstNavn of blomster) {
+    for (const produktNavn of blomster) {
       try {
-        // Enkelt søk per blomst (kan optimaliseres senere med JOIN)
         const searchResult = await query(`
           SELECT TOP 1
-            id, navn, vekt, klassifisering, beskrivelse, synonymer, 
-            opprinnelse, pris_per_kg, kvalitetsgrad
-          FROM dbo.blomster 
+            id, Søkenavn, Art1, Art2, Tar1, Tar2, Kat, [HS Toll NÅ] as HSTollNaa
+          FROM dbo.products 
           WHERE 
-            navn LIKE @blomstContains
-            OR synonymer LIKE @blomstContains
+            Søkenavn LIKE @searchContains
+            OR Art1 LIKE @searchContains
+            OR Art2 LIKE @searchContains
           ORDER BY 
             CASE 
-              WHEN navn = @blomst THEN 1
-              WHEN navn LIKE @blomstStart THEN 2
+              WHEN Søkenavn = @search THEN 1
+              WHEN Søkenavn LIKE @searchStart THEN 2
               ELSE 3
             END
         `, {
-          blomst: blomstNavn,
-          blomstStart: blomstNavn + '%',
-          blomstContains: '%' + blomstNavn + '%'
+          search: produktNavn,
+          searchStart: produktNavn + '%',
+          searchContains: '%' + produktNavn + '%'
         });
 
         if (searchResult.success && searchResult.data.length > 0) {
@@ -175,28 +171,26 @@ router.post('/batch-search', authenticateToken, async (req, res) => {
           foundCount++;
           
           results.push({
-            searchTerm: blomstNavn,
+            searchTerm: produktNavn,
             found: true,
             id: match.id,
-            navn: match.navn,
-            vekt: parseFloat(match.vekt),
-            klassifisering: match.klassifisering,
-            beskrivelse: match.beskrivelse,
-            pris_per_kg: match.pris_per_kg ? parseFloat(match.pris_per_kg) : null,
-            kvalitetsgrad: match.kvalitetsgrad
+            søkenavn: match.Søkenavn,
+            art1: match.Art1,
+            tar1: match.Tar1,
+            kat: match.Kat
           });
         } else {
           results.push({
-            searchTerm: blomstNavn,
+            searchTerm: produktNavn,
             found: false,
-            message: `Ingen match funnet for "${blomstNavn}"`
+            message: `Ingen match funnet for "${produktNavn}"`
           });
         }
 
       } catch (itemError) {
-        console.error(`Feil ved søk etter "${blomstNavn}":`, itemError.message);
+        console.error(`Feil ved søk etter "${produktNavn}":`, itemError.message);
         results.push({
-          searchTerm: blomstNavn,
+          searchTerm: produktNavn,
           found: false,
           error: 'Søkefeil'
         });
@@ -223,108 +217,93 @@ router.post('/batch-search', authenticateToken, async (req, res) => {
   }
 });
 
-// Legg til ny blomst (admin/user only)
-router.post('/add-blomst', authenticateToken, requireRole('user'), async (req, res) => {
+// Legg til nytt produkt (admin/user only)
+router.post('/add-product', authenticateToken, requireRole('user'), async (req, res) => {
   try {
     const { 
-      navn, vekt, klassifisering, beskrivelse, synonymer, 
-      opprinnelse, sesong, pris_per_kg, leverandor, kvalitetsgrad 
+      søkenavn, art1, art2, art3, tar1, tar2, tar3,
+      gml1, gml2, gml3, emmaNavn, kat, notat
     } = req.body;
 
-    if (!navn || !vekt || !klassifisering) {
+    if (!søkenavn) {
       return res.status(400).json({ 
         error: 'Manglende påkrevde felt',
-        message: 'navn, vekt og klassifisering er påkrevd' 
+        message: 'søkenavn er påkrevd' 
       });
     }
 
-    // Valider vekt
-    const vektNumber = parseFloat(vekt);
-    if (isNaN(vektNumber) || vektNumber <= 0) {
-      return res.status(400).json({ 
-        error: 'Ugyldig vekt',
-        message: 'Vekt må være et positivt tall' 
-      });
-    }
-
-    // Valider kvalitetsgrad hvis oppgitt
-    if (kvalitetsgrad && !['A', 'B', 'C', 'D'].includes(kvalitetsgrad)) {
-      return res.status(400).json({ 
-        error: 'Ugyldig kvalitetsgrad',
-        message: 'Kvalitetsgrad må være A, B, C eller D' 
-      });
-    }
-
-    // Sjekk om blomst allerede eksisterer
+    // Sjekk om produkt allerede eksisterer
     const existingResult = await query(
-      'SELECT id FROM dbo.blomster WHERE navn = @navn',
-      { navn: navn.trim() }
+      'SELECT id FROM dbo.products WHERE Søkenavn = @søkenavn',
+      { søkenavn: søkenavn.trim() }
     );
 
     if (existingResult.success && existingResult.data.length > 0) {
       return res.status(400).json({ 
-        error: 'Blomst eksisterer',
-        message: `En blomst med navn "${navn}" eksisterer allerede` 
+        error: 'Produkt eksisterer',
+        message: `Et produkt med navn "${søkenavn}" eksisterer allerede` 
       });
     }
 
-    // Legg til blomst
+    // Legg til produkt
     const insertResult = await query(`
-      INSERT INTO dbo.blomster (
-        navn, vekt, klassifisering, beskrivelse, synonymer, 
-        opprinnelse, sesong, pris_per_kg, leverandor, kvalitetsgrad, created_by
+      INSERT INTO dbo.products (
+        Søkenavn, Art1, Art2, Art3, Tar1, Tar2, Tar3,
+        Gml1, Gml2, Gml3, EmmaNavn, Kat, Notat, created_at, updated_at
       ) 
       OUTPUT INSERTED.id
       VALUES (
-        @navn, @vekt, @klassifisering, @beskrivelse, @synonymer,
-        @opprinnelse, @sesong, @pris_per_kg, @leverandor, @kvalitetsgrad, @created_by
+        @søkenavn, @art1, @art2, @art3, @tar1, @tar2, @tar3,
+        @gml1, @gml2, @gml3, @emmaNavn, @kat, @notat, GETDATE(), GETDATE()
       )
     `, {
-      navn: navn.trim(),
-      vekt: vektNumber,
-      klassifisering: klassifisering.trim(),
-      beskrivelse: beskrivelse || null,
-      synonymer: synonymer || null,
-      opprinnelse: opprinnelse || null,
-      sesong: sesong || null,
-      pris_per_kg: pris_per_kg ? parseFloat(pris_per_kg) : null,
-      leverandor: leverandor || null,
-      kvalitetsgrad: kvalitetsgrad || 'B',
-      created_by: req.user.userId
+      søkenavn: søkenavn.trim(),
+      art1: art1 || null,
+      art2: art2 || null,
+      art3: art3 || null,
+      tar1: tar1 || null,
+      tar2: tar2 || null,
+      tar3: tar3 || null,
+      gml1: gml1 || null,
+      gml2: gml2 || null,
+      gml3: gml3 || null,
+      emmaNavn: emmaNavn || null,
+      kat: kat || null,
+      notat: notat || null
     });
 
     if (!insertResult.success) {
-      throw new Error('Kunne ikke legge til blomst i database');
+      throw new Error('Kunne ikke legge til produkt i database');
     }
 
-    const newBlomstId = insertResult.data[0].id;
+    const newProductId = insertResult.data[0].id;
 
-    console.log(`✅ Ny blomst lagt til: "${navn}" (ID: ${newBlomstId}) av ${req.user.username}`);
+    console.log(`✅ Nytt produkt lagt til: "${søkenavn}" (ID: ${newProductId}) av ${req.user.username}`);
 
     res.json({ 
       success: true, 
-      message: 'Blomst lagt til',
-      blomst: {
-        id: newBlomstId,
-        navn: navn.trim(),
-        vekt: vektNumber,
-        klassifisering: klassifisering.trim(),
-        kvalitetsgrad: kvalitetsgrad || 'B'
+      message: 'Produkt lagt til',
+      product: {
+        id: newProductId,
+        søkenavn: søkenavn.trim(),
+        art1: art1 || null,
+        tar1: tar1 || null,
+        kat: kat || null
       }
     });
 
   } catch (error) {
-    console.error('Add blomst error:', error);
+    console.error('Add product error:', error);
     res.status(500).json({ 
-      error: 'Kunne ikke legge til blomst',
-      message: 'En feil oppstod under tillegging av blomst',
+      error: 'Kunne ikke legge til produkt',
+      message: 'En feil oppstod under tillegging av produkt',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
-// Hent alle blomster (med paginering)
-router.get('/blomster', authenticateToken, async (req, res) => {
+// Hent alle produkter (med paginering)
+router.get('/products', authenticateToken, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
@@ -335,28 +314,29 @@ router.get('/blomster', authenticateToken, async (req, res) => {
     const params = { offset, limit };
 
     if (search) {
-      whereClause = `WHERE navn LIKE @search OR synonymer LIKE @search OR klassifisering LIKE @search`;
+      whereClause = `WHERE Søkenavn LIKE @search OR Art1 LIKE @search OR Tar1 LIKE @search OR Kat LIKE @search`;
       params.search = `%${search}%`;
     }
 
-    // Hent total antall (for paginering)
+    // Hent total antall
     const countResult = await query(`
-      SELECT COUNT(*) as total FROM dbo.blomster ${whereClause}
+      SELECT COUNT(*) as total FROM dbo.products ${whereClause}
     `, params);
 
-    // Hent blomster
-    const blomsterResult = await query(`
+    // Hent produkter
+    const productsResult = await query(`
       SELECT 
-        id, navn, vekt, klassifisering, beskrivelse, synonymer,
-        opprinnelse, sesong, pris_per_kg, leverandor, kvalitetsgrad,
+        id, Søkenavn, Art1, Art2, Art3, Tar1, Tar2, Tar3,
+        Gml1, Gml2, Gml3, EmmaNavn, Kat, Notat,
+        [HS Toll NÅ] as HSTollNaa, Gml,
         created_at, updated_at
-      FROM dbo.blomster 
+      FROM dbo.products 
       ${whereClause}
-      ORDER BY navn
+      ORDER BY Søkenavn
       OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
     `, params);
 
-    if (!blomsterResult.success || !countResult.success) {
+    if (!productsResult.success || !countResult.success) {
       throw new Error('Database query feilet');
     }
 
@@ -365,11 +345,7 @@ router.get('/blomster', authenticateToken, async (req, res) => {
 
     res.json({
       success: true,
-      blomster: blomsterResult.data.map(blomst => ({
-        ...blomst,
-        vekt: parseFloat(blomst.vekt),
-        pris_per_kg: blomst.pris_per_kg ? parseFloat(blomst.pris_per_kg) : null
-      })),
+      products: productsResult.data,
       pagination: {
         currentPage: page,
         totalPages,
@@ -381,54 +357,46 @@ router.get('/blomster', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get blomster error:', error);
+    console.error('Get products error:', error);
     res.status(500).json({ 
-      error: 'Kunne ikke hente blomster',
+      error: 'Kunne ikke hente produkter',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
-// Statistikk for dashboard
+// Statistikk for dashboard (oppdatert for products)
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
     const statsQuery = await query(`
       SELECT 
-        COUNT(*) as total_blomster,
-        COUNT(DISTINCT klassifisering) as unique_classifications,
-        COUNT(DISTINCT kvalitetsgrad) as unique_grades,
-        AVG(CAST(vekt as FLOAT)) as average_weight,
-        MIN(CAST(vekt as FLOAT)) as min_weight,
-        MAX(CAST(vekt as FLOAT)) as max_weight
-      FROM dbo.blomster
+        COUNT(*) as total_products,
+        COUNT(DISTINCT Kat) as unique_categories,
+        COUNT(DISTINCT Tar1) as unique_tariff_codes,
+        COUNT(CASE WHEN Art1 IS NOT NULL THEN 1 END) as products_with_art1
+      FROM dbo.products
     `);
 
-    const gradeStatsQuery = await query(`
+    const categoryStatsQuery = await query(`
       SELECT 
-        kvalitetsgrad, 
-        COUNT(*) as count,
-        AVG(CAST(vekt as FLOAT)) as avg_weight
-      FROM dbo.blomster 
-      GROUP BY kvalitetsgrad
-      ORDER BY kvalitetsgrad
+        Kat, 
+        COUNT(*) as count
+      FROM dbo.products 
+      WHERE Kat IS NOT NULL
+      GROUP BY Kat
+      ORDER BY count DESC
     `);
 
-    if (!statsQuery.success || !gradeStatsQuery.success) {
+    if (!statsQuery.success || !categoryStatsQuery.success) {
       throw new Error('Statistikk query feilet');
     }
 
     res.json({
       success: true,
-      stats: {
-        ...statsQuery.data[0],
-        average_weight: parseFloat(statsQuery.data[0].average_weight?.toFixed(3) || 0),
-        min_weight: parseFloat(statsQuery.data[0].min_weight || 0),
-        max_weight: parseFloat(statsQuery.data[0].max_weight || 0)
-      },
-      gradeStats: gradeStatsQuery.data.map(item => ({
-        grade: item.kvalitetsgrad,
-        count: item.count,
-        averageWeight: parseFloat(item.avg_weight?.toFixed(3) || 0)
+      stats: statsQuery.data[0],
+      categoryStats: categoryStatsQuery.data.map(item => ({
+        category: item.Kat,
+        count: item.count
       }))
     });
 

@@ -11,7 +11,7 @@
 
     <!-- Stats kort -->
     <v-row>
-      <v-col cols="12" md="3" v-for="stat in stats" :key="stat.title">
+      <v-col cols="12" md="3" v-for="stat in statsCards" :key="stat.title">
         <v-card :color="stat.color" dark>
           <v-card-text>
             <div class="d-flex align-center">
@@ -110,38 +110,115 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 export default {
-  name: 'DashboardView', // Changed to multi-word
+  name: 'DashboardView',
   setup() {
-    const stats = ref([
-      { title: 'Total Blomster', value: '0', icon: 'mdi-flower', color: 'primary' },
-      { title: 'Excel Importer', value: '0', icon: 'mdi-file-excel', color: 'success' },
-      { title: 'Database Søk', value: '0', icon: 'mdi-database-search', color: 'info' },
-      { title: 'Aktive Brukere', value: '3', icon: 'mdi-account-multiple', color: 'warning' }
+    // Raw stats data fra API
+    const statsData = ref({
+      total_products: 0,
+      unique_categories: 0,
+      unique_tariff_codes: 0,
+      products_with_art1: 0
+    })
+    
+    const categoryStats = ref([])
+    
+    // Computed stats cards for display
+    const statsCards = computed(() => [
+      { 
+        title: 'Totalt Produkter', 
+        value: statsData.value.total_products || 0, 
+        icon: 'mdi-package-variant', 
+        color: 'primary' 
+      },
+      { 
+        title: 'Kategorier', 
+        value: statsData.value.unique_categories || 0, 
+        icon: 'mdi-shape', 
+        color: 'success' 
+      },
+      { 
+        title: 'Tariffnummer', 
+        value: statsData.value.unique_tariff_codes || 0, 
+        icon: 'mdi-tag-multiple', 
+        color: 'info' 
+      },
+      { 
+        title: 'Med Art1', 
+        value: statsData.value.products_with_art1 || 0, 
+        icon: 'mdi-barcode', 
+        color: 'warning' 
+      }
     ])
     
     const quickActions = ref([
-      { title: 'Import Excel', route: '/excel-import', icon: 'mdi-file-excel', color: 'primary' },
-      { title: 'Søk Database', route: '/database-search', icon: 'mdi-database-search', color: 'success' }
+      { 
+        title: 'Import Excel', 
+        route: '/excel-import', 
+        icon: 'mdi-file-excel', 
+        color: 'primary' 
+      },
+      { 
+        title: 'Produktsøk', 
+        route: '/product-search', 
+        icon: 'mdi-database-search', 
+        color: 'success' 
+      },
+      { 
+        title: 'Produkter', 
+        route: '/products', 
+        icon: 'mdi-package-variant', 
+        color: 'info' 
+      }
     ])
     
     const recentActivity = ref([
-      { id: 1, title: 'Excel fil importert', time: 'For 2 timer siden', icon: 'mdi-file-excel', color: 'success' },
-      { id: 2, title: 'Database søk utført', time: 'For 4 timer siden', icon: 'mdi-database-search', color: 'info' },
-      { id: 3, title: 'Bruker logget inn', time: 'For 1 dag siden', icon: 'mdi-login', color: 'primary' }
+      { 
+        id: 1, 
+        title: 'Excel fil importert', 
+        time: 'For 2 timer siden', 
+        icon: 'mdi-file-excel', 
+        color: 'success' 
+      },
+      { 
+        id: 2, 
+        title: 'Database søk utført', 
+        time: 'For 4 timer siden', 
+        icon: 'mdi-database-search', 
+        color: 'info' 
+      },
+      { 
+        id: 3, 
+        title: 'Bruker logget inn', 
+        time: 'For 1 dag siden', 
+        icon: 'mdi-login', 
+        color: 'primary' 
+      }
     ])
     
     const loadStats = async () => {
       try {
+        console.log('📊 Laster statistikk...')
         const response = await axios.get('/api/database/stats')
+        
         if (response.data.success) {
-          stats.value[0].value = response.data.stats.total_blomster.toString()
+          statsData.value = response.data.stats
+          categoryStats.value = response.data.categoryStats || []
+          console.log('✅ Statistikk lastet:', statsData.value)
         }
       } catch (error) {
-        console.error('Failed to load stats:', error)
+        console.error('❌ Failed to load stats:', error)
+        // Behold default verdier hvis det feiler
+        statsData.value = {
+          total_products: 0,
+          unique_categories: 0,
+          unique_tariff_codes: 0,
+          products_with_art1: 0
+        }
+        categoryStats.value = []
       }
     }
     
@@ -150,7 +227,7 @@ export default {
     })
     
     return {
-      stats,
+      statsCards,
       quickActions,
       recentActivity
     }

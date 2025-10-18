@@ -44,7 +44,13 @@ const routes = [
 	name: 'Products',
 	component: () => import('@/views/Products.vue'),
 	meta: { requiresAuth: true }
- }
+ },
+ {
+	path: '/product-search',
+	name: 'ProductSearch',
+	component: () => import('@/views/ProductSearch.vue'),
+	meta: { requiresAuth: true }
+}
 ]
 
 const router = createRouter({

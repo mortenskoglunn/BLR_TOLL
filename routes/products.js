@@ -4,40 +4,43 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// HENT ALLE PRODUKTER
+// HENT ALLE PRODUKTER (kun når eksplisitt forespurt, ikke for søk)
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    console.log('📦 Henter produkter...');
+    console.log('📦 Henter alle produkter (full liste)...');
+    
+    // Hvis dette kalles fra søkeside, begrens resultat
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
+    
+    let limitClause = '';
+    if (limit) {
+      limitClause = `TOP ${limit}`;
+    }
     
     const result = await query(`
-      SELECT 
+      SELECT ${limitClause}
         id,
-        product_code,
-        product_name,
-        supplier_name,
-        supplier_part_number,
-        price,
-        currency,
-        quantity,
-        unit,
-        category,
-        subcategory,
-        description,
-        specifications,
-        manufacturer,
-        weight,
-        dimensions,
-        hs_code,
-        country_of_origin,
-        warranty_period,
-        delivery_time,
-        minimum_order_quantity,
-        notes,
+        Søkenavn,
+        Art1,
+        Art2,
+        Art3,
+        Gml1,
+        Gml2,
+        Gml3,
+        Tar1,
+        Tar2,
+        Tar3,
+        EmmaNavn,
+        Kat,
+        Notat,
+        [Ant tegn Art1,2,3] as AntTegn,
+        Gml,
+        [HS Toll NÅ] as HSTollNaa,
         import_log_id,
         created_at,
         updated_at
       FROM dbo.products
-      ORDER BY created_at DESC
+      ORDER BY id ASC
     `);
 
     if (!result.success) {
@@ -57,6 +60,156 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Kunne ikke hente produkter',
+      error: error.message
+    });
+  }
+});
+
+// AVANSERT SØK I PRODUKTER (NY - for ProductSearch.vue)
+router.get('/search', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔍 Søker i produkter...', req.query);
+    
+    const { 
+      search,      // Hovedsøk (søker i flere felt)
+      søkenavn,    // Spesifikt søk i Søkenavn
+      art1,
+      art2,
+      art3,
+      tar1,
+      tar2,
+      kat,
+      emmaNavn,
+      notat
+    } = req.query;
+
+    // Bygg WHERE-klausul dynamisk
+    const conditions = [];
+    const params = {};
+
+    // Hovedsøk - søker i flere felt samtidig
+    if (search) {
+      conditions.push(`(
+        Søkenavn LIKE @search 
+        OR Art1 LIKE @search 
+        OR Art2 LIKE @search 
+        OR Art3 LIKE @search 
+        OR Tar1 LIKE @search 
+        OR Tar2 LIKE @search
+        OR Tar3 LIKE @search
+        OR EmmaNavn LIKE @search
+        OR Notat LIKE @search
+      )`);
+      params.search = `%${search}%`;
+    }
+
+    // Spesifikke felt-søk
+    if (søkenavn) {
+      conditions.push('Søkenavn LIKE @søkenavn');
+      params.søkenavn = `%${søkenavn}%`;
+    }
+
+    if (art1) {
+      conditions.push('Art1 LIKE @art1');
+      params.art1 = `%${art1}%`;
+    }
+
+    if (art2) {
+      conditions.push('Art2 LIKE @art2');
+      params.art2 = `%${art2}%`;
+    }
+
+    if (art3) {
+      conditions.push('Art3 LIKE @art3');
+      params.art3 = `%${art3}%`;
+    }
+
+    if (tar1) {
+      conditions.push('Tar1 LIKE @tar1');
+      params.tar1 = `%${tar1}%`;
+    }
+
+    if (tar2) {
+      conditions.push('Tar2 LIKE @tar2');
+      params.tar2 = `%${tar2}%`;
+    }
+
+    if (kat) {
+      conditions.push('Kat = @kat');
+      params.kat = kat;
+    }
+
+    if (emmaNavn) {
+      conditions.push('EmmaNavn LIKE @emmaNavn');
+      params.emmaNavn = `%${emmaNavn}%`;
+    }
+
+    if (notat) {
+      conditions.push('Notat LIKE @notat');
+      params.notat = `%${notat}%`;
+    }
+
+    // Hvis ingen søkekriterier, returner tom liste
+    if (conditions.length === 0) {
+      return res.json({
+        success: true,
+        products: [],
+        count: 0,
+        message: 'Vennligst angi søkekriterier'
+      });
+    }
+
+    // Bygg komplett query
+    const whereClause = conditions.join(' AND ');
+    const searchQuery = `
+      SELECT 
+        id,
+        Søkenavn,
+        Art1,
+        Art2,
+        Art3,
+        Gml1,
+        Gml2,
+        Gml3,
+        Tar1,
+        Tar2,
+        Tar3,
+        EmmaNavn,
+        Kat,
+        Notat,
+        [Ant tegn Art1,2,3] as AntTegn,
+        Gml,
+        [HS Toll NÅ] as [HS Toll NÅ],
+        import_log_id,
+        created_at,
+        updated_at
+      FROM dbo.products
+      WHERE ${whereClause}
+      ORDER BY Søkenavn ASC
+    `;
+
+    console.log('SQL Query:', searchQuery);
+    console.log('Parameters:', params);
+
+    const result = await query(searchQuery, params);
+
+    if (!result.success) {
+      throw new Error('Søk feilet');
+    }
+
+    console.log(`✅ Søk fullført: ${result.data.length} resultater`);
+
+    res.json({
+      success: true,
+      products: result.data,
+      count: result.data.length
+    });
+
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Søk feilet',
       error: error.message
     });
   }
@@ -115,7 +268,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     // Sjekk at produkt eksisterer
     const existingResult = await query(
-      'SELECT product_code, product_name FROM dbo.products WHERE id = @productId',
+      'SELECT Søkenavn FROM dbo.products WHERE id = @productId',
       { productId }
     );
 
@@ -138,11 +291,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       throw new Error('Kunne ikke slette produkt');
     }
 
-    console.log(`❌ Produkt slettet: ${product.product_code} av ${req.user.username}`);
+    console.log(`❌ Produkt slettet: ${product.Søkenavn} av ${req.user.username}`);
 
     res.json({
       success: true,
-      message: `Produkt "${product.product_name}" er slettet`
+      message: `Produkt "${product.Søkenavn}" er slettet`
     });
 
   } catch (error) {
@@ -173,11 +326,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const params = { productId };
 
     const allowedFields = [
-      'product_code', 'product_name', 'supplier_name', 'supplier_part_number',
-      'price', 'currency', 'quantity', 'unit', 'category', 'subcategory',
-      'description', 'specifications', 'manufacturer', 'weight', 'dimensions',
-      'hs_code', 'country_of_origin', 'warranty_period', 'delivery_time',
-      'minimum_order_quantity', 'notes'
+      'Søkenavn', 'Art1', 'Art2', 'Art3',
+      'Gml1', 'Gml2', 'Gml3',
+      'Tar1', 'Tar2', 'Tar3',
+      'EmmaNavn', 'Kat', 'Notat'
     ];
 
     for (const field of allowedFields) {
@@ -221,44 +373,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Kunne ikke oppdatere produkt',
-      error: error.message
-    });
-  }
-});
-
-// SØK I PRODUKTER
-router.get('/search/:query', authenticateToken, async (req, res) => {
-  try {
-    const searchQuery = req.params.query;
-
-    const result = await query(`
-      SELECT * FROM dbo.products
-      WHERE 
-        product_code LIKE @search
-        OR product_name LIKE @search
-        OR supplier_name LIKE @search
-        OR category LIKE @search
-        OR hs_code LIKE @search
-      ORDER BY created_at DESC
-    `, {
-      search: `%${searchQuery}%`
-    });
-
-    if (!result.success) {
-      throw new Error('Søk feilet');
-    }
-
-    res.json({
-      success: true,
-      products: result.data,
-      count: result.data.length
-    });
-
-  } catch (error) {
-    console.error('Search error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Søk feilet',
       error: error.message
     });
   }
