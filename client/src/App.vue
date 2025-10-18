@@ -135,10 +135,10 @@ export default {
         route: '/dashboard'
       },
       {
-        title: 'Produkter',
-        subtitle: 'Se importerte produkter',
-        icon: 'mdi-package-variant',
-        route: '/products'
+        title: 'Produktsøk',
+        subtitle: 'Søk i produktdatabase',
+        icon: 'mdi-database-search',
+        route: '/product-search'
       },
       {
         title: 'Excel Import',
