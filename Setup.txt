@@ -1,0 +1,774 @@
+# TOLL Prosjekt - Installasjonsinstruksjoner for C:\BLR_Toll
+
+## 📁 Opprett følgende filstruktur i C:\BLR_Toll:
+
+```
+C:\BLR_Toll\
+├── package.json
+├── server.js
+├── .env
+├── .gitignore
+├── README.md
+├── config\
+│   └── database.js
+├── routes\
+│   ├── auth.js
+│   ├── database.js
+│   └── upload.js
+├── middleware\
+│   └── auth.js
+├── database\
+│   └── schema.sql
+└── client\
+    └── (Vue.js frontend - kommer senere)
+```
+
+## 📄 Fil innhold:
+
+### 1. **C:\BLR_Toll\package.json**
+```json
+{
+  "name": "blr-toll",
+  "version": "1.0.0",
+  "description": "BLR TOLL prosjekt med Excel import og database matching",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "dev-full": "concurrently \"nodemon server.js\" \"cd client && npm run serve\"",
+    "build": "cd client && npm run build",
+    "install-client": "cd client && npm install",
+    "setup": "npm install && npm run install-client"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.6.0",
+    "multer": "^1.4.5-lts.1",
+    "exceljs": "^4.3.0",
+    "dotenv": "^16.3.1",
+    "express-rate-limit": "^6.8.1",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": ["toll", "excel", "database", "vue", "nodejs"],
+  "author": "BLR",
+  "license": "MIT"
+}
+```
+
+### 2. **C:\BLR_Toll\server.js**
+```javascript
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+require('dotenv').config();
+
+// Import routes
+const authRoutes = require('./routes/auth');
+const databaseRoutes = require('./routes/database');
+const uploadRoutes = require('./routes/upload');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable for development
+}));
+app.use(compression());
+
+// Rate limiting - 100 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    error: 'For mange forespørsler fra denne IP-adressen. Prøv igjen senere.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/', limiter);
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:8080',
+      'http://localhost:3000',
+      'http://127.0.0.1:8080',
+      process.env.FRONTEND_URL
+    ];
+    
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Ikke tillatt av CORS policy'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
+
+// Body parsing middleware
+app.use(express.json({ 
+  limit: '50mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime() 
+  });
+});
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/database', databaseRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'client/dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/dist/index.html'));
+  });
+} else {
+  // Development route
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'BLR TOLL API Server',
+      version: '1.0.0',
+      environment: process.env.NODE_ENV || 'development',
+      endpoints: {
+        auth: '/api/auth/login',
+        database: '/api/database/search',
+        upload: '/api/upload/excel'
+      }
+    });
+  });
+}
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  
+  // Multer specific errors
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ 
+      error: 'Filen er for stor. Maksimal størrelse er 10MB.' 
+    });
+  }
+  
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return res.status(400).json({ 
+      error: 'Uventet fil-upload.' 
+    });
+  }
+
+  res.status(err.status || 500).json({ 
+    error: 'Intern serverfeil',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Noe gikk galt',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Endepunkt ikke funnet',
+    path: req.path,
+    method: req.method
+  });
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
+});
+
+const server = app.listen(PORT, () => {
+  console.log(`🚀 BLR TOLL Server kjører på port ${PORT}`);
+  console.log(`📊 Miljø: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 URL: http://localhost:${PORT}`);
+  console.log(`📁 Prosjektmappe: ${__dirname}`);
+});
+
+module.exports = app;
+```
+
+### 3. **C:\BLR_Toll\.env**
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=blr_toll_db
+DB_PORT=3306
+
+# JWT Configuration
+JWT_SECRET=blr-toll-super-secret-key-2024-change-in-production
+JWT_EXPIRES_IN=24h
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:8080
+
+# Upload Configuration
+MAX_FILE_SIZE=10485760
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Logging
+LOG_LEVEL=info
+```
+
+### 4. **C:\BLR_Toll\.gitignore**
+```gitignore
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# Next.js build output
+.next
+
+# Nuxt.js build output
+.nuxt
+
+# Vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Temporary folders
+tmp/
+temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Upload directories
+uploads/
+temp-uploads/
+
+# Build directories
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+```
+
+### 5. **C:\BLR_Toll\config\database.js**
+```javascript
+const mysql = require('mysql2/promise');
+
+// Database configuration
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'blr_toll_db',
+  port: process.env.DB_PORT || 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  acquireTimeout: 60000,
+  timeout: 60000,
+  charset: 'utf8mb4',
+  timezone: '+01:00', // Oslo timezone
+  dateStrings: true,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+};
+
+console.log('📊 Database config:', {
+  host: dbConfig.host,
+  user: dbConfig.user,
+  database: dbConfig.database,
+  port: dbConfig.port
+});
+
+// Create connection pool
+const pool = mysql.createPool(dbConfig);
+
+// Test database connection
+async function testConnection() {
+  try {
+    const connection = await pool.getConnection();
+    console.log('✅ Database tilkobling vellykket');
+    
+    // Test a simple query
+    const [rows] = await connection.execute('SELECT 1 as test');
+    console.log('✅ Database test query OK:', rows[0]);
+    
+    connection.release();
+    return true;
+  } catch (error) {
+    console.error('❌ Database tilkoblingsfeil:', {
+      message: error.message,
+      code: error.code,
+      errno: error.errno,
+      host: dbConfig.host,
+      database: dbConfig.database
+    });
+    return false;
+  }
+}
+
+// Initialize database connection test
+testConnection();
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('🔄 Lukker database tilkoblinger...');
+  await pool.end();
+  console.log('✅ Database tilkoblinger lukket');
+  process.exit(0);
+});
+
+// Export pool and utility functions
+module.exports = {
+  pool,
+  testConnection,
+  
+  // Helper function for safe queries
+  async query(sql, params = []) {
+    try {
+      const [rows] = await pool.execute(sql, params);
+      return { success: true, data: rows };
+    } catch (error) {
+      console.error('Database query error:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Helper function for transactions
+  async transaction(queries) {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      
+      const results = [];
+      for (const { sql, params } of queries) {
+        const [result] = await connection.execute(sql, params);
+        results.push(result);
+      }
+      
+      await connection.commit();
+      connection.release();
+      
+      return { success: true, results };
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      console.error('Transaction error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+};
+```
+
+### 6. **C:\BLR_Toll\database\schema.sql**
+```sql
+-- BLR TOLL Database Schema
+-- Kjør dette scriptet for å opprette database og tabeller
+
+-- Opprett database hvis den ikke eksisterer
+CREATE DATABASE IF NOT EXISTS blr_toll_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE blr_toll_db;
+
+-- Slette eksisterende tabeller hvis de eksisterer (for ren installasjon)
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS blomster;
+DROP TABLE IF EXISTS users;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Brukertabell
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'user', 'viewer') DEFAULT 'user',
+    full_name VARCHAR(100),
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL,
+    login_count INT DEFAULT 0,
+    active BOOLEAN DEFAULT TRUE,
+    
+    INDEX idx_username (username),
+    INDEX idx_active (active),
+    INDEX idx_role (role)
+) ENGINE=InnoDB COMMENT='Brukertabell for autentisering og autorisasjon';
+
+-- Blomster database (hovedtabell for matching)
+CREATE TABLE blomster (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    navn VARCHAR(100) NOT NULL,
+    vekt DECIMAL(10,3) NOT NULL COMMENT 'Vekt i kg med 3 desimaler',
+    klassifisering VARCHAR(50) NOT NULL,
+    beskrivelse TEXT,
+    synonymer TEXT COMMENT 'Kommaseparerte alternative navn',
+    opprinnelse VARCHAR(100) COMMENT 'Land eller region',
+    sesong VARCHAR(50) COMMENT 'Sesong for blomsten',
+    pris_per_kg DECIMAL(10,2) COMMENT 'Pris per kg i NOK',
+    leverandor VARCHAR(100),
+    kvalitetsgrad ENUM('A', 'B', 'C', 'D') DEFAULT 'B',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT,
+    
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_navn (navn),
+    INDEX idx_klassifisering (klassifisering),
+    INDEX idx_kvalitetsgrad (kvalitetsgrad),
+    INDEX idx_vekt (vekt),
+    FULLTEXT idx_search (navn, synonymer, beskrivelse)
+) ENGINE=InnoDB COMMENT='Hovedtabell for blomster og deres egenskaper';
+
+-- Audit log for å spore alle endringer
+CREATE TABLE audit_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    action VARCHAR(50) NOT NULL COMMENT 'CREATE, UPDATE, DELETE, LOGIN, etc.',
+    table_name VARCHAR(50) NOT NULL,
+    record_id INT,
+    old_values JSON,
+    new_values JSON,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id),
+    INDEX idx_action (action),
+    INDEX idx_table_name (table_name),
+    INDEX idx_timestamp (timestamp)
+) ENGINE=InnoDB COMMENT='Audit log for alle systemendringer';
+
+-- Opprett initial admin bruker
+-- Passord: admin123 (hashet med bcrypt)
+INSERT INTO users (username, password_hash, role, full_name, email) VALUES 
+('admin', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewtkBnW1fUrz1eLG', 'admin', 'System Administrator', 'admin@blr.no');
+
+-- Opprett test bruker
+-- Passord: bruker123 (hashet med bcrypt)
+INSERT INTO users (username, password_hash, role, full_name, email) VALUES 
+('bruker', '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 'Test Bruker', 'bruker@blr.no');
+
+-- Legg til viewer bruker for kun lesing
+-- Passord: viewer123 (hashet med bcrypt)
+INSERT INTO users (username, password_hash, role, full_name, email) VALUES 
+('viewer', '$2a$12$2X8QG3h4t5u9Ry6Kz8Mj3.A9Zv4Bx5Cy6Dw7Ex8Fy9Gz1Hz2Iz3Jy', 'viewer', 'Leser Bruker', 'viewer@blr.no');
+
+-- Eksempel blomster-data med norske blomster og deres egenskaper
+INSERT INTO blomster (navn, vekt, klassifisering, beskrivelse, synonymer, opprinnelse, sesong, pris_per_kg, kvalitetsgrad, created_by) VALUES
+('Rose', 0.500, 'A1', 'Klassisk rød rose, populær for buketter', 'red rose,rød rose,rosa', 'Nederland', 'Hele året', 150.00, 'A', 1),
+('Tulipan', 0.300, 'B2', 'Gul tulipan, vårsymbol', 'yellow tulip,gul tulipan', 'Nederland', 'Vinter/Vår', 120.00, 'B', 1),
+('Nellik', 0.200, 'A2', 'Hvit nellik med lang holdbarhet', 'carnation,hvit nellik,dianthus', 'Colombia', 'Hele året', 80.00, 'A', 1),
+('Solsikke', 1.200, 'C1', 'Stor gul solsikke', 'sunflower,stor solsikke,helianthus', 'Kenya', 'Sommer/Høst', 200.00, 'C', 1),
+('Orkidé', 0.800, 'A1', 'Lilla phalaenopsis orkidé', 'orchid,purple orchid,phalaenopsis', 'Thailand', 'Hele året', 300.00, 'A', 1),
+('Lilje', 0.600, 'B1', 'Hvit orientalsk lilje', 'lily,white lily,oriental lily,lilium', 'Nederland', 'Sommer', 180.00, 'B', 1),
+('Chrysanthemum', 0.400, 'B2', 'Gul krysantemum', 'mum,gul krysantemum,chrysant', 'Nederland', 'Høst', 100.00, 'B', 1),
+('Petunia', 0.100, 'C3', 'Lilla petunia for uteplanting', 'purple petunia', 'Argentina', 'Vår/Sommer', 60.00, 'C', 1),
+('Begonia', 0.300, 'B3', 'Rosa begonia', 'pink begonia', 'Brasil', 'Sommer', 90.00, 'B', 1),
+('Dahlia', 0.900, 'A2', 'Rød georgine med store blomster', 'red dahlia,rød georgine', 'Mexico', 'Sommer/Høst', 250.00, 'A', 1),
+('Fresia', 0.250, 'B1', 'Hvit fresia med intens duft', 'freesia,white freesia', 'Sør-Afrika', 'Vinter/Vår', 110.00, 'B', 1),
+('Iris', 0.450, 'A2', 'Blå iris', 'blue iris,blå iris', 'Nederland', 'Vår', 160.00, 'A', 1),
+('Anturium', 0.350, 'A1', 'Rød anturium med blank overflate', 'anthurium,red anthurium', 'Colombia', 'Hele året', 280.00, 'A', 1),
+('Gerbera', 0.280, 'B1', 'Orange gerbera', 'orange gerbera', 'Sør-Afrika', 'Hele året', 95.00, 'B', 1),
+('Lisianthus', 0.220, 'A2', 'Hvit lisianthus med doble blomster', 'white lisianthus,eustoma', 'Mexico', 'Hele året', 220.00, 'A', 1);
+
+-- Opprett stored procedures for vanlige operasjoner
+
+DELIMITER //
+
+-- Procedure for å søke blomster med fuzzy matching
+CREATE PROCEDURE SearchBlomster(IN search_term VARCHAR(100))
+BEGIN
+    SELECT 
+        id,
+        navn,
+        vekt,
+        klassifisering,
+        beskrivelse,
+        synonymer,
+        opprinnelse,
+        pris_per_kg,
+        kvalitetsgrad,
+        CASE 
+            WHEN navn = search_term THEN 1
+            WHEN navn LIKE CONCAT(search_term, '%') THEN 2
+            WHEN navn LIKE CONCAT('%', search_term, '%') THEN 3
+            WHEN synonymer LIKE CONCAT('%', search_term, '%') THEN 4
+            ELSE 5
+        END as relevance_score
+    FROM blomster 
+    WHERE 
+        navn LIKE CONCAT('%', search_term, '%') 
+        OR synonymer LIKE CONCAT('%', search_term, '%')
+        OR beskrivelse LIKE CONCAT('%', search_term, '%')
+    ORDER BY relevance_score, navn
+    LIMIT 10;
+END //
+
+-- Procedure for å logge brukeraktivitet
+CREATE PROCEDURE LogUserActivity(
+    IN p_user_id INT,
+    IN p_action VARCHAR(50),
+    IN p_table_name VARCHAR(50),
+    IN p_record_id INT,
+    IN p_old_values JSON,
+    IN p_new_values JSON,
+    IN p_ip_address VARCHAR(45),
+    IN p_user_agent TEXT
+)
+BEGIN
+    INSERT INTO audit_log (
+        user_id, action, table_name, record_id, 
+        old_values, new_values, ip_address, user_agent
+    ) VALUES (
+        p_user_id, p_action, p_table_name, p_record_id,
+        p_old_values, p_new_values, p_ip_address, p_user_agent
+    );
+END //
+
+DELIMITER ;
+
+-- Opprett triggers for automatisk audit logging
+DELIMITER //
+
+CREATE TRIGGER blomster_after_insert 
+AFTER INSERT ON blomster
+FOR EACH ROW 
+BEGIN
+    INSERT INTO audit_log (user_id, action, table_name, record_id, new_values) 
+    VALUES (
+        IFNULL(NEW.created_by, 1), 
+        'INSERT', 
+        'blomster', 
+        NEW.id, 
+        JSON_OBJECT('navn', NEW.navn, 'vekt', NEW.vekt, 'klassifisering', NEW.klassifisering)
+    );
+END //
+
+CREATE TRIGGER blomster_after_update 
+AFTER UPDATE ON blomster
+FOR EACH ROW 
+BEGIN
+    INSERT INTO audit_log (user_id, action, table_name, record_id, old_values, new_values) 
+    VALUES (
+        IFNULL(NEW.created_by, 1), 
+        'UPDATE', 
+        'blomster', 
+        NEW.id, 
+        JSON_OBJECT('navn', OLD.navn, 'vekt', OLD.vekt, 'klassifisering', OLD.klassifisering),
+        JSON_OBJECT('navn', NEW.navn, 'vekt', NEW.vekt, 'klassifisering', NEW.klassifisering)
+    );
+END //
+
+DELIMITER ;
+
+-- Opprett views for enklere queries
+CREATE VIEW blomster_summary AS
+SELECT 
+    id,
+    navn,
+    vekt,
+    klassifisering,
+    kvalitetsgrad,
+    pris_per_kg,
+    opprinnelse,
+    created_at,
+    CASE 
+        WHEN pris_per_kg IS NULL THEN 'Ikke priset'
+        WHEN pris_per_kg < 100 THEN 'Lavpris'
+        WHEN pris_per_kg BETWEEN 100 AND 200 THEN 'Middels'
+        ELSE 'Premium'
+    END as priskategori
+FROM blomster
+WHERE navn IS NOT NULL;
+
+-- Opprett indekser for bedre ytelse
+CREATE INDEX idx_blomster_composite ON blomster(klassifisering, kvalitetsgrad, vekt);
+CREATE INDEX idx_audit_log_date ON audit_log(DATE(timestamp));
+
+-- Database statistics
+SELECT 
+    'Database Setup Complete' as Status,
+    (SELECT COUNT(*) FROM users) as Total_Users,
+    (SELECT COUNT(*) FROM blomster) as Total_Blomster,
+    (SELECT COUNT(*) FROM audit_log) as Total_Audit_Entries,
+    NOW() as Setup_Time;
+
+-- Vis alle tabeller
+SHOW TABLES;
+
+COMMIT;
+
+-- Slutt på database setup
+SELECT '✅ BLR TOLL Database er satt opp og klar til bruk!' as Message;
+```
+
+## 🚀 **INSTALLASJONSINSTRUKSJONER:**
+
+### Steg 1: Åpne terminal i C:\BLR_Toll
+```cmd
+cd C:\BLR_Toll
+```
+
+### Steg 2: Installer Node.js avhengigheter
+```cmd
+npm install
+```
+
+### Steg 3: Sett opp MySQL database
+```cmd
+# Logg inn i MySQL
+mysql -u root -p
+
+# Kjør SQL-scriptet
+SOURCE C:\BLR_Toll\database\schema.sql
+```
+
+### Steg 4: Konfigurer .env filen
+- Rediger `C:\BLR_Toll\.env`
+- Oppdater database-innstillinger
+
+### Steg 5: Start serveren
+```cmd
+npm run dev
+```
+
+### Steg 6: Test at alt fungerer
+Åpne http://localhost:5000 i nettleseren
+
+## 🔑 **Test-brukere:**
+- **Admin:** `admin` / `admin123`
+- **Bruker:** `bruker` / `bruker123`  
+- **Viewer:** `viewer` / `viewer123`
+
+Nå kan du fortsette med Vue.js frontend setup!
