@@ -166,12 +166,6 @@ export default {
         route: '/product-search', 
         icon: 'mdi-database-search', 
         color: 'success' 
-      },
-      { 
-        title: 'Produkter', 
-        route: '/products', 
-        icon: 'mdi-package-variant', 
-        color: 'info' 
       }
     ])
     
