@@ -6,6 +6,9 @@
           <v-icon left color="primary">mdi-file-excel-outline</v-icon>
           Excel Import Maler
         </h1>
+        <v-alert type="info" outlined dense class="mb-4">
+          <strong>Info:</strong> Maler definerer hvordan Excel-kolonner mappes til blomster_import-tabellen
+        </v-alert>
       </v-col>
     </v-row>
 
@@ -121,7 +124,6 @@
                   class="mr-1"
                 >
                   <v-icon small>mdi-pencil</v-icon>
-                  Rediger
                 </v-btn>
                 
                 <v-btn
@@ -131,28 +133,25 @@
                   class="mr-1"
                 >
                   <v-icon small>mdi-table-column</v-icon>
-                  Kolonner
                 </v-btn>
                 
                 <v-btn
                   small
                   :color="item.active ? 'warning' : 'success'"
                   @click="toggleTemplateStatus(item)"
+                  class="mr-1"
                 >
                   <v-icon small>
                     {{ item.active ? 'mdi-pause' : 'mdi-play' }}
                   </v-icon>
-                  {{ item.active ? 'Deaktiver' : 'Aktiver' }}
                 </v-btn>
                 
                 <v-btn
                   small
                   color="error"
                   @click="handleDeleteClick(item)"
-                  class="ml-1"
                 >
                   <v-icon small>mdi-delete</v-icon>
-                  Slett
                 </v-btn>
               </template>
             </v-data-table>
@@ -162,7 +161,7 @@
     </v-row>
 
     <!-- Create/Edit Template Dialog -->
-    <v-dialog v-model="showDialog" max-width="800px" persistent>
+    <v-dialog v-model="showDialog" max-width="900px" persistent scrollable>
       <v-card>
         <v-card-title>
           <v-icon left :color="isEditing ? 'warning' : 'primary'">
@@ -171,7 +170,7 @@
           {{ isEditing ? 'Rediger Mal' : 'Opprett Ny Mal' }}
         </v-card-title>
         
-        <v-card-text>
+        <v-card-text style="max-height: 70vh;">
           <v-form ref="templateForm" v-model="validForm">
             <!-- Grunnleggende informasjon -->
             <v-card outlined class="mb-4">
@@ -187,6 +186,7 @@
                   outlined
                   prepend-inner-icon="mdi-tag"
                   required
+                  hint="F.eks: 'Nederlandse Bloemen BV - Standard'"
                 ></v-text-field>
                 
                 <v-text-field
@@ -196,6 +196,7 @@
                   outlined
                   prepend-inner-icon="mdi-truck"
                   required
+                  hint="F.eks: 'Nederlandse Bloemen BV'"
                 ></v-text-field>
                 
                 <v-textarea
@@ -203,7 +204,8 @@
                   label="Beskrivelse"
                   outlined
                   prepend-inner-icon="mdi-text"
-                  rows="3"
+                  rows="2"
+                  hint="Valgfri beskrivelse av malen"
                 ></v-textarea>
               </v-card-text>
             </v-card>
@@ -238,21 +240,24 @@
 
             <!-- Kolonnemapping -->
             <v-card outlined>
-              <v-card-subtitle class="pb-0">
+              <v-card-subtitle class="pb-0 d-flex align-center">
                 <v-icon left>mdi-table-column</v-icon>
-                Kolonnemapping
+                <span>Kolonnemapping til blomster_import</span>
                 <v-spacer></v-spacer>
                 <v-btn
                   small
                   color="success"
                   @click="addColumnMapping"
-                  text
                 >
                   <v-icon left small>mdi-plus</v-icon>
-                  Legg til kolonne
+                  Legg til
                 </v-btn>
               </v-card-subtitle>
               <v-card-text>
+                <v-alert type="info" dense outlined class="mb-3">
+                  <strong>Tips:</strong> Excel-kolonne kan være bokstav (A, B, C) eller kolonnenavn hvis header finnes
+                </v-alert>
+                
                 <div v-if="formData.column_mappings.length === 0" class="text-center py-4">
                   <v-icon large color="grey lighten-1">mdi-table-off</v-icon>
                   <p class="grey--text mt-2">Ingen kolonnemap definert</p>
@@ -261,41 +266,46 @@
                 <v-row 
                   v-for="(mapping, index) in formData.column_mappings" 
                   :key="index"
-                  class="mb-2"
+                  class="mb-2 align-center"
                 >
                   <v-col cols="4">
                     <v-text-field
                       v-model="mapping.excel_column"
                       label="Excel kolonne"
-                      placeholder="A, B, C eller kolonnenavn"
+                      placeholder="A, B, C eller 'Invoice_Date'"
                       outlined
                       dense
+                      hint="Bokstav eller kolonnenavn"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="4">
+                  <v-col cols="5">
                     <v-select
                       v-model="mapping.database_field"
-                      :items="databaseFields"
-                      label="Database felt"
+                      :items="['Invoice_Date','Invoice_Number','Currency','Description','Pot_Size','Number_Of_Tray','Amount_per_Tray','Price','EAN','Tariff_Number','Country_Of_Origin_Raw','Weight_per_order_line','Gross_Weight_per_order_line','product_code','product_name','supplier_name','price_nok','quantity','unit','category','hs_code','country_of_origin','weight']"
+                      label="Blomster_import felt"
                       outlined
                       dense
+                      :hint="mapping.database_field ? getFieldDescription(mapping.database_field) : ''"
+                      persistent-hint
                     ></v-select>
                   </v-col>
-                  <v-col cols="3">
-                    <v-switch
+                  <v-col cols="2">
+                    <v-checkbox
                       v-model="mapping.required"
                       label="Påkrevd"
                       color="error"
                       dense
-                    ></v-switch>
+                      hide-details
+                    ></v-checkbox>
                   </v-col>
                   <v-col cols="1" class="d-flex align-center">
                     <v-btn
                       icon
                       color="error"
+                      small
                       @click="removeColumnMapping(index)"
                     >
-                      <v-icon>mdi-delete</v-icon>
+                      <v-icon small>mdi-delete</v-icon>
                     </v-btn>
                   </v-col>
                 </v-row>
@@ -304,7 +314,7 @@
 
             <v-switch
               v-model="formData.active"
-              label="Aktiv mal"
+              label="Aktiv mal (kan brukes i import)"
               color="success"
               class="mt-4"
             ></v-switch>
@@ -318,7 +328,7 @@
           </v-btn>
           <v-btn
             :color="isEditing ? 'warning' : 'primary'"
-            :disabled="!validForm || saving"
+            :disabled="!validForm || saving || formData.column_mappings.length === 0"
             :loading="saving"
             @click="saveTemplate"
           >
@@ -330,7 +340,7 @@
     </v-dialog>
 
     <!-- View Columns Dialog -->
-    <v-dialog v-model="showColumnsDialog" max-width="600px">
+    <v-dialog v-model="showColumnsDialog" max-width="700px">
       <v-card>
         <v-card-title>
           <v-icon left color="info">mdi-table-column</v-icon>
@@ -342,22 +352,25 @@
             <template v-slot:default>
               <thead>
                 <tr>
-                  <th>Excel Kolonne</th>
-                  <th>Database Felt</th>
-                  <th>Påkrevd</th>
+                  <th class="text-left">Excel Kolonne</th>
+                  <th class="text-left">Database Felt</th>
+                  <th class="text-center">Påkrevd</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="mapping in selectedTemplate?.column_mappings" :key="mapping.excel_column">
+                <tr v-for="(mapping, index) in selectedTemplate?.column_mappings" :key="index">
                   <td>
                     <v-chip small color="blue" text-color="white">
                       {{ mapping.excel_column }}
                     </v-chip>
                   </td>
-                  <td>{{ mapping.database_field }}</td>
                   <td>
+                    <strong>{{ mapping.database_field }}</strong>
+                    <div class="caption grey--text">{{ getFieldDescription(mapping.database_field) }}</div>
+                  </td>
+                  <td class="text-center">
                     <v-chip 
-                      small 
+                      x-small
                       :color="mapping.required ? 'error' : 'success'"
                       text-color="white"
                     >
@@ -446,7 +459,7 @@
 
 <script>
 /* eslint-disable */
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 export default {
@@ -494,33 +507,68 @@ export default {
       { text: 'Kolonner', value: 'column_count' },
       { text: 'Status', value: 'active' },
       { text: 'Opprettet', value: 'created_at' },
-      { text: 'Oppdatert', value: 'updated_at' },
       { text: 'Handlinger', value: 'actions', sortable: false }
     ]
     
-    // Database fields available for mapping
-    const databaseFields = [
+    // Database fields available for mapping (blomster_import kolonner)
+    const databaseFieldsList = [
+      'Invoice_Date',
+      'Invoice_Number',
+      'Currency',
+      'Description',
+      'Pot_Size',
+      'Number_Of_Tray',
+      'Amount_per_Tray',
+      'Price',
+      'EAN',
+      'Tariff_Number',
+      'Country_Of_Origin_Raw',
+      'Weight_per_order_line',
+      'Gross_Weight_per_order_line',
       'product_code',
-      'product_name', 
-      'supplier_part_number',
-      'price',
-      'currency',
+      'product_name',
+      'supplier_name',
+      'price_nok',
       'quantity',
       'unit',
       'category',
-      'subcategory',
-      'description',
-      'specifications',
-      'manufacturer',
-      'weight',
-      'dimensions',
       'hs_code',
       'country_of_origin',
-      'warranty_period',
-      'delivery_time',
-      'minimum_order_quantity',
-      'notes'
+      'weight'
     ]
+    
+    const databaseFields = computed(() => databaseFieldsList)
+    
+    // Field descriptions for helping user
+    const fieldDescriptions = {
+      'Invoice_Date': 'Fakturadato',
+      'Invoice_Number': 'Fakturanummer',
+      'Currency': 'Valuta (EUR, NOK, etc.)',
+      'Description': 'Produktbeskrivelse',
+      'Pot_Size': 'Pottestørrelse',
+      'Number_Of_Tray': 'Antall brett',
+      'Amount_per_Tray': 'Antall per brett',
+      'Price': 'Pris',
+      'EAN': 'EAN/produktkode',
+      'Tariff_Number': 'Tariffnummer',
+      'Country_Of_Origin_Raw': 'Opprinnelsesland (kode)',
+      'Weight_per_order_line': 'Vekt per ordrelinje',
+      'Gross_Weight_per_order_line': 'Bruttovekt per ordrelinje',
+      'product_code': 'Mappes fra EAN',
+      'product_name': 'Mappes fra Description',
+      'supplier_name': 'Leverandørnavn',
+      'price_nok': 'Pris i NOK (konvertert)',
+      'quantity': 'Beregnet mengde',
+      'unit': 'Enhet (stk, kg, etc.)',
+      'category': 'Kategori',
+      'hs_code': 'HS-kode',
+      'country_of_origin': 'Opprinnelsesland (normalisert)',
+      'weight': 'Vekt'
+    }
+    
+    const getFieldDescription = (field) => {
+      return fieldDescriptions[field] || ''
+    }
     
     // Form validation rules
     const nameRules = [
@@ -688,6 +736,10 @@ export default {
     
     const saveTemplate = async () => {
       if (!validForm.value) return
+      if (formData.column_mappings.length === 0) {
+        showNotification('Du må legge til minst én kolonnemapping', 'warning', 'mdi-alert')
+        return
+      }
       
       saving.value = true
       
@@ -811,7 +863,8 @@ export default {
       addColumnMapping,
       removeColumnMapping,
       saveTemplate,
-      formatDate
+      formatDate,
+      getFieldDescription
     }
   }
 }
@@ -824,5 +877,9 @@ export default {
 
 .v-card {
   transition: all 0.3s ease;
+}
+
+.caption {
+  font-size: 11px;
 }
 </style>
