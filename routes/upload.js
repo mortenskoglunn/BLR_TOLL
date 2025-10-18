@@ -38,9 +38,10 @@ const upload = multer({
   }
 });
 
-// EXCEL IMPORT MED MAL
+// EXCEL IMPORT MED MAL - Importerer til blomster_import
 router.post('/excel', authenticateToken, upload.single('file'), async (req, res) => {
   let importLogId = null;
+  let importBatchId = null;
   
   try {
     console.log('📊 Excel import startet');
@@ -61,17 +62,21 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
     const hasHeader = req.body.hasHeader === 'true';
     const columnMappings = JSON.parse(req.body.columnMappings || '[]');
 
+    // Generer unik batch ID for denne importen
+    importBatchId = `BATCH-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     console.log('📋 Mal:', templateName);
     console.log('🏢 Leverandør:', supplierName);
     console.log('📑 Header:', hasHeader ? 'Ja' : 'Nei');
     console.log('🗂️ Kolonner:', columnMappings.length);
+    console.log('🔖 Batch ID:', importBatchId);
 
     // Les Excel-fil
     const workbook = XLSX.readFile(req.file.path);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     
-    // Konverter til JSON
+    // Les alltid som array (uten å bruke header-navn)
     const rawData = XLSX.utils.sheet_to_json(worksheet, { 
       header: 1, // Få data som array av arrays
       defval: null // Sett tomme celler til null
@@ -79,9 +84,13 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
 
     console.log('📊 Totalt rader i Excel:', rawData.length);
 
-    // Fjern header-rad hvis spesifisert i mal
+    // Hvis template har header, hopp over første rad
     const dataRows = hasHeader ? rawData.slice(1) : rawData;
     console.log('📊 Data-rader å prosessere:', dataRows.length);
+    
+    if (hasHeader) {
+      console.log('📋 Header-rad (ignoreres):', rawData[0]);
+    }
 
     // Opprett import log
     const logResult = await query(
@@ -112,29 +121,47 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
       const row = dataRows[i];
       
       try {
-        // Bygg produkt-objekt basert på kolonnemapping
-        const productData = {
-          supplier_name: supplierName,
-          import_log_id: importLogId
+        // Bygg data-objekt basert på kolonnemapping
+        const importData = {
+          import_log_id: importLogId,
+          import_batch_id: importBatchId,
+          import_status: 'pending',
+          supplier_name: supplierName
         };
 
         // Map Excel-kolonner til database-felt
         for (const mapping of columnMappings) {
+          // Alltid bruk kolonne-indeks (A, B, C konverteres til 0, 1, 2)
           const excelColIndex = getColumnIndex(mapping.excel_column);
-          const value = row[excelColIndex];
+          let value = row[excelColIndex];
           
-          // Sjekk om påkrevd felt mangler
-          if (mapping.required && !value) {
-            throw new Error(`Påkrevd felt mangler: ${mapping.database_field}`);
+          // Debug logging for første rad
+          if (i === 0) {
+            console.log(`   📍 Mapping: ${mapping.excel_column} → index ${excelColIndex} → value "${value}" → field ${mapping.database_field}`);
           }
           
-          if (value !== null && value !== undefined) {
-            productData[mapping.database_field] = value;
+          // Sjekk om påkrevd felt mangler
+          if (mapping.required && (value === null || value === undefined || value === '')) {
+            throw new Error(`Påkrevd felt mangler: ${mapping.database_field} (Excel kolonne: ${mapping.excel_column})`);
+          }
+          
+          if (value !== null && value !== undefined && value !== '') {
+            // Konverter dato-felt
+            if (mapping.database_field === 'Invoice_Date' && typeof value === 'string') {
+              value = convertDateFormat(value);
+            }
+            
+            importData[mapping.database_field] = value;
           }
         }
 
-        // Sett inn produkt i database
-        await insertProduct(productData);
+        // Debug: Log første rad for å se hva som mappes
+        if (i === 0) {
+          console.log('📋 Første rad mappet data:', importData);
+        }
+
+        // Sett inn i blomster_import
+        await insertToBlomsterImport(importData);
         successCount++;
 
       } catch (error) {
@@ -171,6 +198,7 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
     console.log('✅ Import fullført');
     console.log(`   Vellykkede: ${successCount}`);
     console.log(`   Feilet: ${failCount}`);
+    console.log(`   Importert til blomster_import med batch: ${importBatchId}`);
 
     res.json({
       success: true,
@@ -179,7 +207,8 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
       rowsSuccessful: successCount,
       rowsFailed: failCount,
       errors: errors.slice(0, 10), // Send kun første 10 feil
-      importLogId
+      importLogId,
+      importBatchId
     });
 
   } catch (error) {
@@ -214,55 +243,118 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
   }
 });
 
+// Hjelpefunksjon: Konverter dato-format
+function convertDateFormat(dateStr) {
+  if (!dateStr) return null;
+  
+  // Håndter Excel dato-nummer (serielt tall)
+  if (typeof dateStr === 'number') {
+    // Excel dato som tall (dager siden 1900-01-01)
+    const excelEpoch = new Date(1899, 11, 30);
+    const date = new Date(excelEpoch.getTime() + dateStr * 86400000);
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+  }
+  
+  dateStr = String(dateStr).trim();
+  
+  // Håndter DD.MM.YYYY format (norsk)
+  if (dateStr.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+    const [day, month, year] = dateStr.split('.');
+    return `${year}-${month}-${day}`; // YYYY-MM-DD
+  }
+  
+  // Håndter DD/MM/YYYY format
+  if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    const [day, month, year] = dateStr.split('/');
+    return `${year}-${month}-${day}`; // YYYY-MM-DD
+  }
+  
+  // Håndter YYYY-MM-DD (allerede riktig format)
+  if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return dateStr;
+  }
+  
+  // Prøv å parse med Date
+  const date = new Date(dateStr);
+  if (!isNaN(date.getTime())) {
+    return date.toISOString().split('T')[0];
+  }
+  
+  // Returner original hvis vi ikke kan konvertere
+  console.warn(`⚠️ Kunne ikke konvertere dato: ${dateStr}`);
+  return dateStr;
+}
+
 // Hjelpefunksjon: Konverter Excel-kolonne (A, B, C) til indeks (0, 1, 2)
 function getColumnIndex(column) {
+  // Hvis det allerede er et tall, returner det
   if (typeof column === 'number') {
     return column;
   }
   
-  // Konverter bokstav til tall (A=0, B=1, etc.)
-  let index = 0;
-  column = column.toUpperCase();
+  // Konverter string til string for sikkerhet
+  column = String(column).trim().toUpperCase();
   
-  for (let i = 0; i < column.length; i++) {
-    index = index * 26 + (column.charCodeAt(i) - 64);
+  // Sjekk om det er et tall som string
+  const numericValue = parseInt(column);
+  if (!isNaN(numericValue)) {
+    return numericValue;
   }
   
-  return index - 1; // 0-basert indeks
+  // Konverter bokstav til tall (A=0, B=1, C=2, etc.)
+  let index = 0;
+  
+  for (let i = 0; i < column.length; i++) {
+    const charCode = column.charCodeAt(i);
+    // Sjekk at det er en bokstav (A-Z)
+    if (charCode >= 65 && charCode <= 90) {
+      index = index * 26 + (charCode - 64);
+    } else {
+      // Ugyldig tegn, returner som er
+      console.warn(`⚠️ Ugyldig kolonneformat: ${column}`);
+      return column;
+    }
+  }
+  
+  // Returner 0-basert indeks
+  return index - 1;
 }
 
-// Hjelpefunksjon: Sett inn produkt i database
-async function insertProduct(productData) {
-  const fields = Object.keys(productData).filter(key => productData[key] !== undefined);
+// Hjelpefunksjon: Sett inn i blomster_import
+async function insertToBlomsterImport(importData) {
+  const fields = Object.keys(importData).filter(key => importData[key] !== undefined);
   const values = fields.map(field => `@${field}`).join(', ');
   const columns = fields.join(', ');
   
   const params = {};
   fields.forEach(field => {
-    params[field] = productData[field];
+    params[field] = importData[field];
   });
 
   const insertQuery = `
-    INSERT INTO dbo.products (${columns}, created_at, updated_at)
+    INSERT INTO dbo.blomster_import (${columns}, created_at, updated_at)
     VALUES (${values}, GETDATE(), GETDATE())
   `;
 
   const result = await query(insertQuery, params);
   
   if (!result.success) {
-    throw new Error('Database insert feilet');
+    throw new Error('Database insert feilet: ' + (result.error || 'Unknown error'));
   }
 }
 
-// EKSPORTER DATA TIL EXCEL
+// EKSPORTER DATA TIL EXCEL (fra blomster_import)
 router.post('/export', authenticateToken, async (req, res) => {
   try {
-    const { filters, columns } = req.body;
+    const { filters, source } = req.body;
 
     console.log('📤 Excel export startet');
 
+    // Velg tabell basert på source
+    const tableName = source === 'products' ? 'dbo.products' : 'dbo.blomster_import';
+    
     // Hent data fra database basert på filtre
-    let queryStr = 'SELECT * FROM dbo.products WHERE 1=1';
+    let queryStr = `SELECT * FROM ${tableName} WHERE 1=1`;
     const params = {};
 
     if (filters?.supplier_name) {
@@ -273,6 +365,11 @@ router.post('/export', authenticateToken, async (req, res) => {
     if (filters?.category) {
       queryStr += ' AND category = @category';
       params.category = filters.category;
+    }
+
+    if (filters?.import_batch_id) {
+      queryStr += ' AND import_batch_id = @importBatchId';
+      params.importBatchId = filters.import_batch_id;
     }
 
     queryStr += ' ORDER BY created_at DESC';
