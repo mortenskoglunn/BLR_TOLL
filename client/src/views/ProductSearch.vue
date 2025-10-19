@@ -46,7 +46,7 @@
       <v-col cols="12">
         <v-expansion-panels v-model="filtersExpanded">
           <v-expansion-panel>
-            <v-expansion-panel-header>
+            <v-expansion-panel-title>
               <div>
                 <v-icon left>mdi-filter-variant</v-icon>
                 <strong>Avansert søk</strong>
@@ -59,9 +59,9 @@
                   {{ activeFiltersCount }} aktive
                 </v-chip>
               </div>
-            </v-expansion-panel-header>
+            </v-expansion-panel-title>
             
-            <v-expansion-panel-content>
+            <v-expansion-panel-text>
               <v-row>
                 <v-col cols="12" md="4">
                   <v-text-field
@@ -186,7 +186,7 @@
                   </v-btn>
                 </v-col>
               </v-row>
-            </v-expansion-panel-content>
+            </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
       </v-col>
@@ -236,6 +236,14 @@
                 <span v-else class="grey--text">-</span>
               </template>
 
+              <!-- Art2 -->
+              <template v-slot:item.Art2="{ item }">
+                <v-chip small color="blue" dark v-if="item.Art2">
+                  {{ item.Art2 }}
+                </v-chip>
+                <span v-else class="grey--text">-</span>
+              </template>
+
               <!-- Tar1 -->
               <template v-slot:item.Tar1="{ item }">
                 <v-chip small color="green" dark v-if="item.Tar1">
@@ -244,7 +252,15 @@
                 <span v-else class="grey--text">-</span>
               </template>
 
-              <!-- HS Toll NÅ -->
+              <!-- Tar2 -->
+              <template v-slot:item.Tar2="{ item }">
+                <v-chip small color="green" dark v-if="item.Tar2">
+                  {{ item.Tar2 }}
+                </v-chip>
+                <span v-else class="grey--text">-</span>
+              </template>
+
+              <!-- HS Toll -->
               <template v-slot:item.hs_toll="{ item }">
                 <v-chip small color="orange" dark v-if="item['HS Toll NÅ']">
                   {{ item['HS Toll NÅ'] }}
@@ -305,7 +321,7 @@
             <!-- Venstre kolonne -->
             <v-col cols="12" md="6">
               <v-list dense>
-                <v-subheader>GRUNNINFO</v-subheader>
+                <v-list-subheader>GRUNNINFO</v-list-subheader>
                 
                 <v-list-item>
                   <v-list-item-content>
@@ -333,7 +349,7 @@
                 </v-list-item>
 
                 <v-divider class="my-3"></v-divider>
-                <v-subheader>ARTIKKEL/VARENUMMER</v-subheader>
+                <v-list-subheader>ARTIKKEL/VARENUMMER</v-list-subheader>
 
                 <v-list-item>
                   <v-list-item-content>
@@ -367,7 +383,7 @@
             <!-- Høyre kolonne -->
             <v-col cols="12" md="6">
               <v-list dense>
-                <v-subheader>TARIFFNUMMER</v-subheader>
+                <v-list-subheader>TARIFFNUMMER</v-list-subheader>
 
                 <v-list-item>
                   <v-list-item-content>
@@ -406,7 +422,7 @@
                 </v-list-item>
 
                 <v-divider class="my-3"></v-divider>
-                <v-subheader>GAMLE KODER</v-subheader>
+                <v-list-subheader>GAMLE KODER</v-list-subheader>
 
                 <v-list-item>
                   <v-list-item-content>
@@ -435,7 +451,7 @@
           <v-divider class="my-4"></v-divider>
 
           <div v-if="selectedProduct.Notat">
-            <v-subheader>NOTAT</v-subheader>
+            <v-list-subheader>NOTAT</v-list-subheader>
             <p class="ml-4">{{ selectedProduct.Notat }}</p>
           </div>
         </v-card-text>
@@ -502,17 +518,17 @@ export default {
     const snackbarColor = ref('success')
     const snackbarIcon = ref('mdi-check')
     
-    // Table headers
+    // Table headers - Vuetify 3 bruker 'title' og 'key' i stedet for 'text' og 'value'
     const headers = [
-      { text: 'ID', value: 'id', width: '80px' },
-      { text: 'Søkenavn', value: 'Søkenavn', width: '250px' },
-      { text: 'Art1', value: 'Art1' },
-      { text: 'Art2', value: 'Art2' },
-      { text: 'Tar1', value: 'Tar1' },
-      { text: 'Tar2', value: 'Tar2' },
-      { text: 'HS Toll', value: 'hs_toll' },
-      { text: 'Kategori', value: 'Kat' },
-      { text: 'Handlinger', value: 'actions', sortable: false, width: '120px' }
+      { title: 'ID', key: 'id', width: '80px' },
+      { title: 'Søkenavn', key: 'Søkenavn', width: '250px' },
+      { title: 'Art1', key: 'Art1' },
+      { title: 'Art2', key: 'Art2' },
+      { title: 'Tar1', key: 'Tar1' },
+      { title: 'Tar2', key: 'Tar2' },
+      { title: 'HS Toll', key: 'hs_toll' },
+      { title: 'Kategori', key: 'Kat' },
+      { title: 'Handlinger', key: 'actions', sortable: false, width: '120px' }
     ]
     
     // Computed
@@ -534,9 +550,8 @@ export default {
     
     const loadCategories = async () => {
       try {
-        // Hent kun unike kategorier uten å laste alle produkter
         const response = await axios.get('/api/database/products', {
-          params: { limit: 1000 } // Begrens antall for å få kategorier
+          params: { limit: 1000 }
         })
         if (response.data.success) {
           const categories = [...new Set(response.data.products
@@ -546,7 +561,6 @@ export default {
         }
       } catch (error) {
         console.error('Feil ved lasting av kategorier:', error)
-        // Sett noen standard kategorier hvis det feiler
         allCategories.value = ['10', '21', '31']
       }
     }
@@ -556,14 +570,12 @@ export default {
       searchPerformed.value = true
       
       try {
-        // Bygg query parameters
         const params = {}
         
         if (mainSearch.value) {
           params.search = mainSearch.value
         }
         
-        // Legg til alle aktive filtre
         Object.keys(filters.value).forEach(key => {
           if (filters.value[key]) {
             params[key] = filters.value[key]
@@ -634,15 +646,12 @@ Kategori: ${product.Kat || '-'}
       })
     }
     
-    // Load categories on mount (men IKKE produkter!)
     onMounted(() => {
-      // Kun last kategorier for dropdown, ikke alle produkter
       loadCategories()
       console.log('✅ Produktsøk klar - skriv søkeord for å starte')
     })
     
     return {
-      // Data
       mainSearch,
       filters,
       searchResults,
@@ -652,18 +661,12 @@ Kategori: ${product.Kat || '-'}
       showDetailsDialog,
       selectedProduct,
       headers,
-      
-      // Computed
       activeFiltersCount,
       categoryOptions,
-      
-      // Snackbar
       showSnackbar,
       snackbarText,
       snackbarColor,
       snackbarIcon,
-      
-      // Methods
       performSearch,
       clearFilters,
       viewDetails,
