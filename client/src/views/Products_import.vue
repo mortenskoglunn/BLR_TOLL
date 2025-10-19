@@ -4,7 +4,7 @@
       <v-col cols="12">
         <h1 class="text-h4 mb-6">
           <v-icon left color="primary">mdi-package-variant</v-icon>
-          Importerte Produkter
+          Importerte Produkter (blomster_import)
         </h1>
       </v-col>
     </v-row>
@@ -64,6 +64,7 @@
                   outlined
                   dense
                   clearable
+                  hint="Søk i Description, product_code, EAN..."
                 ></v-text-field>
               </v-col>
               
@@ -129,30 +130,59 @@
                 'items-per-page-options': [10, 25, 50, 100]
               }"
             >
-              <!-- Produktkode -->
-              <template v-slot:item.product_code="{ item }">
-                <v-chip small color="primary" dark>
-                  {{ item.product_code }}
+              <!-- Invoice Date -->
+              <template v-slot:item.Invoice_Date="{ item }">
+                {{ formatDate(item.Invoice_Date) }}
+              </template>
+
+              <!-- Description -->
+              <template v-slot:item.Description="{ item }">
+                <div class="text-truncate" style="max-width: 300px;" :title="item.Description">
+                  {{ item.Description || '-' }}
+                </div>
+              </template>
+
+              <!-- EAN / Product Code -->
+              <template v-slot:item.EAN="{ item }">
+                <v-chip small color="primary" dark v-if="item.EAN">
+                  {{ item.EAN }}
                 </v-chip>
+                <span v-else class="grey--text">-</span>
               </template>
 
-              <!-- Pris -->
-              <template v-slot:item.price="{ item }">
-                <span v-if="item.price">
-                  {{ formatPrice(item.price) }} {{ item.currency || 'NOK' }}
+              <!-- Price -->
+              <template v-slot:item.Price="{ item }">
+                <span v-if="item.Price">
+                  {{ formatPrice(item.Price) }} {{ item.Currency || 'EUR' }}
                 </span>
                 <span v-else class="grey--text">-</span>
               </template>
 
-              <!-- Antall -->
-              <template v-slot:item.quantity="{ item }">
-                <span v-if="item.quantity">
-                  {{ item.quantity }} {{ item.unit || 'stk' }}
+              <!-- Quantity (calculated) -->
+              <template v-slot:item.quantity_calc="{ item }">
+                <span v-if="item.Number_Of_Tray && item.Amount_per_Tray">
+                  {{ item.Number_Of_Tray * item.Amount_per_Tray }}
                 </span>
                 <span v-else class="grey--text">-</span>
               </template>
 
-              <!-- Importert dato -->
+              <!-- Tariff Number -->
+              <template v-slot:item.Tariff_Number="{ item }">
+                <v-chip small color="green" dark v-if="item.Tariff_Number">
+                  {{ item.Tariff_Number }}
+                </v-chip>
+                <span v-else class="grey--text">-</span>
+              </template>
+
+              <!-- Country of Origin -->
+              <template v-slot:item.Country_Of_Origin_Raw="{ item }">
+                <v-chip small outlined v-if="item.Country_Of_Origin_Raw">
+                  {{ item.Country_Of_Origin_Raw }}
+                </v-chip>
+                <span v-else class="grey--text">-</span>
+              </template>
+
+              <!-- Created at -->
               <template v-slot:item.created_at="{ item }">
                 {{ formatDate(item.created_at) }}
               </template>
@@ -161,9 +191,6 @@
               <template v-slot:item.actions="{ item }">
                 <v-btn icon small color="info" @click="viewDetails(item)">
                   <v-icon small>mdi-eye</v-icon>
-                </v-btn>
-                <v-btn icon small color="primary" @click="editProduct(item)">
-                  <v-icon small>mdi-pencil</v-icon>
                 </v-btn>
                 <v-btn icon small color="error" @click="deleteProduct(item)">
                   <v-icon small>mdi-delete</v-icon>
@@ -176,38 +203,74 @@
     </v-row>
 
     <!-- Produktdetaljer dialog -->
-    <v-dialog v-model="showDetailsDialog" max-width="800px">
+    <v-dialog v-model="showDetailsDialog" max-width="900px" scrollable>
       <v-card v-if="selectedProduct">
-        <v-card-title>
-          <v-icon left color="primary">mdi-package-variant</v-icon>
-          Produktdetaljer
+        <v-card-title class="primary white--text">
+          <v-icon left color="white">mdi-package-variant</v-icon>
+          Produktdetaljer - ID: {{ selectedProduct.id }}
         </v-card-title>
 
-        <v-card-text>
+        <v-card-text class="pt-4" style="max-height: 70vh;">
           <v-row>
+            <!-- Venstre kolonne -->
             <v-col cols="12" md="6">
               <v-list dense>
+                <v-list-subheader>FAKTURA INFORMASJON</v-list-subheader>
+                
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Fakturadato</v-list-item-subtitle>
+                    <v-list-item-title>{{ formatDate(selectedProduct.Invoice_Date) }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Fakturanummer</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Invoice_Number || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Valuta</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Currency || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-divider class="my-3"></v-divider>
+                <v-list-subheader>PRODUKT INFORMASJON</v-list-subheader>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Beskrivelse</v-list-item-subtitle>
+                    <v-list-item-title class="text-wrap">{{ selectedProduct.Description || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Produktkode</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.product_code || '-' }}</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <v-list-item-content>
-                    <v-list-item-subtitle>Produktnavn</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.product_name || '-' }}</v-list-item-title>
+                    <v-list-item-subtitle>EAN</v-list-item-subtitle>
+                    <v-list-item-title>
+                      <v-chip small color="primary">{{ selectedProduct.EAN || '-' }}</v-chip>
+                    </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Leverandør</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.supplier_name || '-' }}</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Kategori</v-list-item-subtitle>
@@ -217,37 +280,115 @@
               </v-list>
             </v-col>
 
+            <!-- Høyre kolonne -->
             <v-col cols="12" md="6">
               <v-list dense>
+                <v-list-subheader>PRIS OG MENGDE</v-list-subheader>
+
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Pris</v-list-item-subtitle>
                     <v-list-item-title>
-                      {{ formatPrice(selectedProduct.price) }} {{ selectedProduct.currency || 'NOK' }}
+                      {{ formatPrice(selectedProduct.Price) }} {{ selectedProduct.Currency || 'EUR' }}
                     </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <v-list-item-content>
-                    <v-list-item-subtitle>Antall</v-list-item-subtitle>
+                    <v-list-item-subtitle>Pris NOK</v-list-item-subtitle>
                     <v-list-item-title>
-                      {{ selectedProduct.quantity }} {{ selectedProduct.unit || 'stk' }}
+                      {{ formatPrice(selectedProduct.price_nok) }} NOK
                     </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Pottstørrelse</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Pot_Size || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Antall brett</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Number_Of_Tray || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Antall per brett</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Amount_per_Tray || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Total mengde</v-list-item-subtitle>
+                    <v-list-item-title>
+                      <v-chip color="info">
+                        {{ selectedProduct.quantity || (selectedProduct.Number_Of_Tray * selectedProduct.Amount_per_Tray) || '-' }}
+                      </v-chip>
+                    </v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-divider class="my-3"></v-divider>
+                <v-list-subheader>TOLL OG OPPRINNELSE</v-list-subheader>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Tariffnummer</v-list-item-subtitle>
+                    <v-list-item-title>
+                      <v-chip small color="green" dark>{{ selectedProduct.Tariff_Number || '-' }}</v-chip>
+                    </v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>HS-kode</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.hs_code || '-' }}</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Opprinnelsesland (rå)</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Country_Of_Origin_Raw || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Opprinnelsesland</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.country_of_origin || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-divider class="my-3"></v-divider>
+                <v-list-subheader>VEKT</v-list-subheader>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Vekt per ordrelinje</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Weight_per_order_line || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Bruttovekt per ordrelinje</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.Gross_Weight_per_order_line || '-' }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-subtitle>Vekt</v-list-item-subtitle>
+                    <v-list-item-title>{{ selectedProduct.weight || '-' }}</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -256,21 +397,33 @@
 
           <v-divider class="my-4"></v-divider>
 
-          <div v-if="selectedProduct.description">
-            <strong>Beskrivelse:</strong>
-            <p class="mt-2">{{ selectedProduct.description }}</p>
-          </div>
-
-          <div v-if="selectedProduct.specifications" class="mt-4">
-            <strong>Spesifikasjoner:</strong>
-            <p class="mt-2">{{ selectedProduct.specifications }}</p>
-          </div>
+          <v-row>
+            <v-col cols="12">
+              <v-list-subheader>METADATA</v-list-subheader>
+              <v-simple-table dense>
+                <tbody>
+                  <tr>
+                    <td><strong>Importert:</strong></td>
+                    <td>{{ formatDate(selectedProduct.created_at) }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Database ID:</strong></td>
+                    <td>{{ selectedProduct.id }}</td>
+                  </tr>
+                </tbody>
+              </v-simple-table>
+            </v-col>
+          </v-row>
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="showDetailsDialog = false">
+          <v-btn text color="grey" @click="showDetailsDialog = false">
             Lukk
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="copyToClipboard(selectedProduct)">
+            <v-icon left>mdi-content-copy</v-icon>
+            Kopier info
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -296,7 +449,7 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 export default {
-  name: 'ProductsView',
+  name: 'ProductsImportView',
   setup() {
     // State
     const products = ref([])
@@ -313,17 +466,20 @@ export default {
     const snackbarColor = ref('success')
     const snackbarIcon = ref('mdi-check')
     
-    // Table headers
+    // Table headers for blomster_import table
     const headers = [
-      { text: 'Produktkode', value: 'product_code' },
-      { text: 'Produktnavn', value: 'product_name' },
+      { text: 'ID', value: 'id', width: '80px' },
+      { text: 'Fakturadato', value: 'Invoice_Date' },
+      { text: 'Beskrivelse', value: 'Description' },
+      { text: 'EAN', value: 'EAN' },
       { text: 'Leverandør', value: 'supplier_name' },
-      { text: 'Pris', value: 'price' },
-      { text: 'Antall', value: 'quantity' },
+      { text: 'Pris', value: 'Price' },
+      { text: 'Antall', value: 'quantity_calc' },
+      { text: 'Tariffnr', value: 'Tariff_Number' },
+      { text: 'Land', value: 'Country_Of_Origin_Raw' },
       { text: 'Kategori', value: 'category' },
-      { text: 'HS-kode', value: 'hs_code' },
       { text: 'Importert', value: 'created_at' },
-      { text: 'Handlinger', value: 'actions', sortable: false }
+      { text: 'Handlinger', value: 'actions', sortable: false, width: '120px' }
     ]
     
     // Computed
@@ -374,10 +530,18 @@ export default {
     const loadProducts = async () => {
       loading.value = true
       try {
-        const response = await axios.get('/api/products')
+        // Henter fra blomster_import via ny endpoint
+        const response = await axios.get('/api/blomster-import', {
+          params: { 
+            limit: 5000,
+            supplier_name: filterSupplier.value,
+            category: filterCategory.value
+          }
+        })
+        
         if (response.data.success) {
           products.value = response.data.products
-          showNotification(`${products.value.length} produkter lastet`, 'info', 'mdi-package')
+          showNotification(`${products.value.length} produkter lastet fra blomster_import`, 'info', 'mdi-package')
         }
       } catch (error) {
         showNotification(
@@ -395,17 +559,14 @@ export default {
       showDetailsDialog.value = true
     }
     
-    const editProduct = (product) => {
-      showNotification('Redigering kommer snart', 'info', 'mdi-information')
-    }
-    
     const deleteProduct = async (product) => {
-      if (!confirm(`Er du sikker på at du vil slette "${product.product_name}"?`)) {
+      if (!confirm(`Er du sikker på at du vil slette produkt ID ${product.id}?`)) {
         return
       }
       
       try {
-        const response = await axios.delete(`/api/products/${product.id}`)
+        // Bruk blomster-import endpoint
+        const response = await axios.delete(`/api/blomster-import/${product.id}`)
         if (response.data.success) {
           showNotification('Produkt slettet', 'success', 'mdi-delete')
           loadProducts()
@@ -422,6 +583,7 @@ export default {
     const exportProducts = async () => {
       try {
         const response = await axios.post('/api/upload/export', {
+          source: 'blomster_import',
           filters: {
             supplier_name: filterSupplier.value,
             category: filterCategory.value
@@ -433,7 +595,7 @@ export default {
         const url = window.URL.createObjectURL(new Blob([response.data]))
         const link = document.createElement('a')
         link.href = url
-        link.setAttribute('download', `produkter-${Date.now()}.xlsx`)
+        link.setAttribute('download', `blomster_import-${Date.now()}.xlsx`)
         document.body.appendChild(link)
         link.click()
         link.remove()
@@ -446,6 +608,27 @@ export default {
           'mdi-alert'
         )
       }
+    }
+    
+    const copyToClipboard = (product) => {
+      const text = `
+ID: ${product.id}
+Fakturadato: ${formatDate(product.Invoice_Date)}
+Fakturanummer: ${product.Invoice_Number || '-'}
+Beskrivelse: ${product.Description || '-'}
+EAN: ${product.EAN || '-'}
+Leverandør: ${product.supplier_name || '-'}
+Pris: ${formatPrice(product.Price)} ${product.Currency || 'EUR'}
+Tariffnummer: ${product.Tariff_Number || '-'}
+Land: ${product.Country_Of_Origin_Raw || '-'}
+Kategori: ${product.category || '-'}
+      `.trim()
+      
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('Produktinfo kopiert til utklippstavle', 'success', 'mdi-content-copy')
+      }).catch(() => {
+        showNotification('Kunne ikke kopiere til utklippstavle', 'error', 'mdi-alert')
+      })
     }
     
     const formatPrice = (price) => {
@@ -495,9 +678,9 @@ export default {
       // Methods
       loadProducts,
       viewDetails,
-      editProduct,
       deleteProduct,
       exportProducts,
+      copyToClipboard,
       formatPrice,
       formatDate
     }
@@ -508,5 +691,15 @@ export default {
 <style scoped>
 .v-data-table {
   border-radius: 8px;
+}
+
+.text-wrap {
+  white-space: normal !important;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

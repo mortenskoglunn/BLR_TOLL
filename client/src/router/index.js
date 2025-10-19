@@ -40,17 +40,17 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-	path: '/products',
-	name: 'Products',
-	component: () => import('@/views/Products.vue'),
-	meta: { requiresAuth: true }
- },
- {
-	path: '/product-search',
-	name: 'ProductSearch',
-	component: () => import('@/views/ProductSearch.vue'),
-	meta: { requiresAuth: true }
-}
+    path: '/products-import',
+    name: 'ProductsImport',
+    component: () => import('@/views/Products_import.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product-search',
+    name: 'ProductSearch',
+    component: () => import('@/views/ProductSearch.vue'),
+    meta: { requiresAuth: true }
+  }
 ]
 
 const router = createRouter({

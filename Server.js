@@ -9,8 +9,12 @@ require('dotenv').config();
 // Import database
 const { initializeDatabase, query } = require('./config/database');
 
-// Import routes (legg til når filene eksisterer)
+// Import routes
 const authRoutes = require('./routes/auth');
+const databaseRoutes = require('./routes/database');
+const uploadRoutes = require('./routes/upload');
+const productsRoutes = require('./routes/products');
+const blomsterImportRoutes = require('./routes/blomster_import'); // NY IMPORT
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -95,13 +99,15 @@ app.get('/health', (req, res) => {
 app.get('/test-db', async (req, res) => {
   try {
     const result = await query('SELECT COUNT(*) as UserCount FROM dbo.users');
-    const blomsterResult = await query('SELECT COUNT(*) as BlomsterCount FROM dbo.blomster');
+    const productsResult = await query('SELECT COUNT(*) as ProductsCount FROM dbo.products');
+    const blomsterImportResult = await query('SELECT COUNT(*) as BlomsterImportCount FROM dbo.blomster_import');
     
-    if (result.success && blomsterResult.success) {
+    if (result.success && productsResult.success && blomsterImportResult.success) {
       res.json({ 
         message: 'Database tilkobling OK',
         users: result.data[0].UserCount,
-        blomster: blomsterResult.data[0].BlomsterCount,
+        products: productsResult.data[0].ProductsCount,
+        blomster_import: blomsterImportResult.data[0].BlomsterImportCount,
         server: process.env.DB_SERVER,
         database: process.env.DB_NAME
       });
@@ -124,16 +130,11 @@ app.get('/test-db', async (req, res) => {
 // API routes
 console.log('🔗 Registrerer API routes...');
 app.use('/api/auth', authRoutes);
-
-// Placeholder for other routes
-const databaseRoutes = require('./routes/database');
 app.use('/api/database', databaseRoutes);
-
-const uploadRoutes = require('./routes/upload');
 app.use('/api/upload', uploadRoutes);
-
-const productsRoutes = require('./routes/products');
 app.use('/api/products', productsRoutes);
+app.use('/api/blomster-import', blomsterImportRoutes); // NY ROUTE
+console.log('✅ API routes registrert');
 
 // Development route
 app.get('/', (req, res) => {
@@ -145,7 +146,7 @@ app.get('/', (req, res) => {
     database: {
       server: process.env.DB_SERVER,
       database: process.env.DB_NAME,
-      connected: '✅' // Vis alltid som tilkoblet for nå
+      connected: '✅'
     },
     endpoints: {
       health: 'GET /health',
@@ -153,15 +154,31 @@ app.get('/', (req, res) => {
       auth: {
         login: 'POST /api/auth/login',
         verify: 'GET /api/auth/verify',
-        register: 'POST /api/auth/register'
+        register: 'POST /api/auth/register',
+        users: 'GET /api/auth/users (admin)',
+        excelTemplates: 'GET /api/auth/excel-templates'
+      },
+      products: {
+        list: 'GET /api/products',
+        search: 'GET /api/products/search',
+        single: 'GET /api/products/:id',
+        delete: 'DELETE /api/products/:id'
+      },
+      blomsterImport: {
+        list: 'GET /api/blomster-import',
+        single: 'GET /api/blomster-import/:id',
+        delete: 'DELETE /api/blomster-import/:id',
+        stats: 'GET /api/blomster-import/stats/summary'
       },
       database: {
         search: 'GET /api/database/search?blomst=navn',
-        batchSearch: 'POST /api/database/batch-search'
+        batchSearch: 'POST /api/database/batch-search',
+        stats: 'GET /api/database/stats'
       },
       upload: {
         excel: 'POST /api/upload/excel',
-        export: 'POST /api/upload/export'
+        export: 'POST /api/upload/export',
+        history: 'GET /api/upload/history'
       }
     },
     testUsers: {
@@ -208,8 +225,11 @@ app.use((req, res) => {
       'GET /test-db',
       'POST /api/auth/login',
       'GET /api/auth/verify',
-      'GET /api/database',
-      'GET /api/upload'
+      'GET /api/products',
+      'GET /api/products/search',
+      'GET /api/blomster-import',
+      'GET /api/database/search',
+      'POST /api/upload/excel'
     ]
   });
 });
@@ -234,6 +254,13 @@ const server = app.listen(PORT, () => {
   console.log(`   - Server info: http://localhost:${PORT}`);
   console.log(`   - Database: http://localhost:${PORT}/test-db`);
   console.log(`   - Innlogging: POST http://localhost:${PORT}/api/auth/login`);
+  console.log('');
+  console.log('📋 Tilgjengelige routes:');
+  console.log('   - /api/auth           → Autentisering');
+  console.log('   - /api/products       → Products-tabellen');
+  console.log('   - /api/blomster-import → Blomster_import-tabellen');
+  console.log('   - /api/database       → Database-søk');
+  console.log('   - /api/upload         → Excel import/export');
   console.log('');
 });
 

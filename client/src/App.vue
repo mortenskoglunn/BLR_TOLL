@@ -141,6 +141,12 @@ export default {
         route: '/product-search'
       },
       {
+        title: 'Importerte Produkter',
+        subtitle: 'Se alle importerte produkter',
+        icon: 'mdi-package-variant',
+        route: '/products-import'
+      },
+      {
         title: 'Excel Import',
         subtitle: 'Last opp og behandle Excel-filer',
         icon: 'mdi-file-excel',

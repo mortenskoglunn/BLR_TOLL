@@ -116,43 +116,6 @@
                 </div>
               </div>
             </v-alert>
-
-            <v-expansion-panels class="mt-4">
-              <v-expansion-panel>
-                <v-expansion-panel-header>
-                  <div>
-                    <v-icon left>mdi-table-column</v-icon>
-                    Se kolonnemapping ({{ selectedTemplate.column_mappings.length }} kolonner)
-                  </div>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-simple-table dense>
-                    <template v-slot:default>
-                      <thead>
-                        <tr>
-                          <th>Excel Kolonne</th>
-                          <th>Database Felt</th>
-                          <th>Påkrevd</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="mapping in selectedTemplate.column_mappings" :key="mapping.excel_column">
-                          <td>
-                            <v-chip x-small color="blue" dark>{{ mapping.excel_column }}</v-chip>
-                          </td>
-                          <td>{{ mapping.database_field }}</td>
-                          <td>
-                            <v-icon small :color="mapping.required ? 'error' : 'success'">
-                              {{ mapping.required ? 'mdi-asterisk' : 'mdi-check' }}
-                            </v-icon>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </template>
-                  </v-simple-table>
-                </v-expansion-panel-content>
-              </v-expansion-panel>
-            </v-expansion-panels>
           </v-card-text>
         </v-card>
       </v-col>
@@ -445,9 +408,5 @@ export default {
 
 .template-item:hover {
   background-color: rgba(0, 0, 0, 0.04);
-}
-
-.v-expansion-panel {
-  border: 1px solid #e0e0e0;
 }
 </style>
