@@ -1,0 +1,315 @@
+landskode;land;valuta;valutakode;frihandel;T1;T2;MRNtype;Merkand;Tilh.
+AD;ANDORRA;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+AE;DE FORENTE ARABISKE EMIRATER;UAE-Dirham;AED;FHA-GCC;P;J;T1;;FHA
+AF;AFGHANISTAN;Afghani;AFN;GSP-MUL;G;J;T1;;G
+AG;ANTIGUA OG BARBUDA (inkl. Redonda);Østkaribisk dollar;XCD; GSP;G;J;T1;;G
+AI;ANGUILLA;Østkaribisk dollar;XCD;x;J;J;T1;;x
+AL;ALBANIA;Lek;ALL;FHA;P;J;T1;;FHA
+AM;ARMENIA;Dram;AMD;G+;G;J;T1;;GP
+AO;ANGOLA;Kwanza;AOA;GSP-MUL;G;J;T1;;G
+AQ;ANTARKTIS (området sør for 60 sørl. br.), herunder Dronning Mauds land;Norsk krone;NOK;x;J;J;T1;;x
+AR;ARGENTINA;Argentisk peso;ARS;GSP;G;J;T1;;G
+AS;AMERIKANSK SAMOA;US dollar;USD;x;J;J;T1;;x
+AT;ØSTERRIKE;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+AU;AUSTRALIA (inkl. Lord Howeøya, Macquarieøyene, Ashmore- og Cartierøyene og Coral Seaøyene);Australsk dollar;AUD;x;J;J;T1;;x
+AW;ARUBA;Arubisk gylden;AWG;x;J;J;T1;;x
+AX;Åland;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+AZ;ASERBAJDSJAN;Aserbajdsjansk manat;AZN;GSP;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+B;x;x;x;x;J;J;T1;;x
+BA;BOSNIA-HERCEGOVINA;Konvertible mark;BAM;FHA;P;J;T1;;FHA
+BB;BARBADOS;Barbadisk dollar;BBD;x;J;J;T1;;x
+BD;BANGLADESH;Taka;BDT;GSP-MUL;G;J;T1;;G
+BE;BELGIA;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+BF;BURKINA FASO;CFA-Franc BCEAO');XOF;MUL-GSP;G;J;T1;;G
+BG;BULGARIA;Lev;BGN;EU-EØS-FHA;J;B;T2;;EU
+BH;BAHRAIN;Bahrainsk dinar;BHD;FHA-GCC;P;J;T1;;FHA
+BI;BURUNDI;Burundisk franc;BIF;GSP-MUL;G;J;T1;;G
+BJ;BENIN;CFA-Franc BCEAO');XOF;GSP-MUL;G;J;T1;;G
+BL;SAINT BARTHELEMY;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+BM;BERMUDA;Bermudisk dollar;BMD;x;J;J;T1;;x
+BN;BRUNEI (DARUSSALAM);Bruneisk dollar;BND;x;J;J;T1;;x
+BO;BOLIVIA;Boliviano;BOB;G+;G;J;T1;;GP
+BQ;BONAIRE, ST. EUSTATIUS og SABA;Amerikanske dollar;USD;x;J;J;T1;;x
+BR;BRASIL (inkl. Fernando da Noronha-arkipelet og Maritim Vazaøyene);Brasilsk real;BRL;GSP;G;J;T1;;G
+BS;BAHAMAS;Bahamansk dollar;BSD;x;J;J;T1;;x
+BT;BHUTAN;Indisk rupi/ Ngultrum;INR/BTN;GSP-MUL;G;J;T1;;G
+BV;BOUVETØYA;Norsk krone;NOK;x;J;J;T1;;x
+BW;BOTSWANA;Pula;BWP;GSP- SACU-FHA;G;J;T1;;G
+BY;HVITERUSSLAND;Hvite-russisk rubel;BYR;GSP;G;J;T1;;G
+BZ;BELIZE;Belizisk dollar;BZD;GSP;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+C;x;x;x;x;J;J;T1;;x
+CA;CANADA;Kanadisk dollar;CAD;FHA;P;J;T1;;FHA
+CC;KOKOSØYENE (Keelingøyene);Australsk dollar;AUD;x;J;J;T1;;x
+CD;KONGO, DEN DEMOKRATISKE REPUBLIKKEN;Kongolesiske franc;CDF;x;J;J;T1;;x
+CF;DEN SENTRALAFRIKANSKE REPUBLIKKEN;CFA-Franc BEAC²);XAF;x;J;J;T1;;x
+CG;KONGO, REPUBLIKKEN (Brazzaville);CFA-Franc BEAC²);XAF;G+;G;J;T1;;GP
+CH;SVEITS;Sveitsisk franc;CHF;EFTA-FHA;J;C;T2;;EFTA
+CI;ELFENBENSKYSTEN;CFA-Franc BCEAO');XOF;G+;G;J;T1;;GP
+CK;COOKØYENE;Newzealandsk dollar;NZD;GSP;G;J;T1;;G
+CL;CHILE (inkl. Påskeøya, San Felix, Juan Fernándezøyene, San Ambrisio og Sala y Gomez);Chilensk peso;CLP;FHA;P;J;T1;;FHA
+CM;KAMERUN;CFA-Franc BEAC²);XAF;x;J;J;T1;;x
+CN;KINA;Yuan renminbi;CNY;GSP;G;J;T1;;G
+CO;COLOMBIA (inkl. San Andrés y Providencia og Malpeloøya);Colombiansk peso;COP;FHA;P;J;T1;;FHA
+CR;COSTA RICA (inkl. Kokosøya);Costaricansk colon;CRC;FHA;P;J;T1;;FHA
+CU;CUBA;Kubansk peso;CUC CUP;GSP;G;J;T1;;G
+CV;KAPP VERDE;Kapp Verde-escudo;CVE;G+;G;J;T1;;GP
+CW;CURACAO;Nederl. antillegylden;ANG;x;J;J;T1;;x
+CX;CHRISTMASØYA;Australsk dollar;AUD;x;J;J;T1;;x
+CY;KYPROS;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+CZ;TSJEKKIA;Koruna;CZK;EU-EØS-FHA;J;B;T2;;EU
+x;x;x;x;x;J;J;T1;;x
+D;x;x;x;x;J;J;T1;;x
+DE;FORBUNDREPUBLIKKEN TYSKLAND;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+DJ;DJIBOUTI (tidligere FRANSK AFAR- OG ISSALAND);Djiboutisk franc;DJF;x;J;J;T1;;x
+DK;DANMARK;Dansk krone;DKK;EU-EØS-FHA;J;B;T2;;EU
+DM;DOMINICA;Østkaribisk dollar;XCD;GSP;G;J;T1;;G
+DO;DEN DOMINIKANSKE REPUBLIKKEN;Dominikansk peso;DOP;GSP;G;J;T1;;G
+DZ;ALGERIE;Algerisk dinar;DZD;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+E;x;x;x;x;J;J;T1;;x
+EC;ECUADOR (inkl. Galapagosøyene);US dollar;USD;GSP-FHA;G;J;T1;;G
+EE;ESTLAND;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+EG;EGYPT;Egyptisk pund;EGP;FHA;P;J;T1;;FHA
+EH;VEST-SAHARA;Marokkansk dirham;MAD;x;J;J;T1;;x
+ER;ERITREA;Nakfa;ERN; GSP-MUL;G;J;T1;;G
+ES;SPANIA (unntatt Kanariøyene, Ceuta og Melilla);Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+ET;ETIOPIA;Etiopisk birr;ETB;GSP-MUL;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+F;x;x;x;x;J;J;T1;;x
+FI;FINLAND, unntatt Åland;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+FJ;FIJI (inkl. Rotumaøyene);Fidjiansk dollar;FJD;GSP;G;J;T1;;G
+FK;FALKLANDSØYENE (Malvinas);Falkland-pund;FKP;x;J;J;T1;;x
+FM;MIKRONESIAFØDERASJONEN (inkl. Karolinene (unntatt Paulau));US dollar;USD;x;J;J;T1;;x
+FO;FÆRØYENE;Dansk krone;DKK;FHA;P;J;T1;;FHA
+FR;FRANKRIKE;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+x;x;x;x;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+G;x;x;x;x;J;J;T1;;x
+GA;GABON;CFA-Franc BEAC²);XAF;GSP;G;J;T1;;G
+GB;STORBRITANNIA (inkl. Alderney, Orkn­øyene og Shetland, men unn­tatt Guernsey, Jersey og Isle of Man);Pund sterling;GBP;FHA;P;J;T1;Hvilken kode gjelder?;FHA
+GD;GRENADA (inkl. Sørlige Grenadinøyer);Østkaribisk dollar;XCD;x;J;J;T1;;x
+GE;GEORGIA;Lari;GEL;FHA;P;J;T1;;FHA
+GF;FRANSK GUYANA;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+GG;GUERNSEY;Pund sterling;GBP;FHA;P;J;T1;;FHA
+GH;GHANA;Cedi;GHS;G+;G;J;T1;;GP
+GI;GIBRALTAR;Gibraltar-pund;GIP;x;J;J;T1;;x
+GL;GRØNLAND;Dansk krone;DKK;FHA;P;J;T1;;FHA
+GM;GAMBIA;Dalasi;GMD;GSP-MUL;G;J;T1;;G
+GN;GUINEA;Guinesisk franc;GNF;GSP-MUL;G;J;T1;;G
+GP;GUADELOUPE (inkl. Désirade, Marie Galante og Les Saintes);Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+GQ;EKVATORIAL-GUINEA (inkl.Rio Muni, Annobon og Biyogo);CFA-Franc BEAC²);XAF;x;J;J;T1;;x
+GR;HELLAS (inkl.det autonome området Athos);Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+GS;SØR-GEORGIA OG DE SØNDRE SANDWICHØYENE;Pund sterling;GBP;x;J;J;T1;;x
+GT;GUATEMALA;Quetzal;GTQ;G+;G;J;T1;;GP
+GU;GUAM;US dollar;USD;x;J;J;T1;;x
+GW;GUINEA-BISSAU;CFA-Franc BCEAO');XOF;GSP-MUL ;G;J;T1;;G
+GY;GUYANA;Guyansk dollar;GYD;G+;G;J;T1;;GP
+x;x;x;x;x;J;J;T1;;x
+H;x;x;x;x;J;J;T1;;x
+HK;HONGKONG, KINA;HongKong dollar;HKD;FHA;P;J;T1;;FHA
+HM;HEARD- OG MCDONALDØYENE;Australsk dollar;AUD;x;J;J;T1;;x
+HN;HONDURAS (inkl.Svaneøyene);Lempira;HNL;G+;G;J;T1;;GP
+HR;KROATIA;Kroatisk kuna;HRK;EU-EØS-FHA;J;B;T2;;EU
+HT;HAITI;Gourde;HTG;x;J;J;T1;;x
+HU;UNGARN;Forint;HUF;EU-EØS-FHA;J;B;T2;;EU
+x;x;x;x;x;J;J;T1;;x
+I;x;x;x;x;J;J;T1;;x
+ID;INDONESIA;Rupiah;IDR;GSP;G;J;T1;;G
+IE;IRLAND (EIRE);Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+IL;ISRAEL;Shekel;ILS;FHA;P;J;T1;;FHA
+IM;ISLE OF MAN;Pund sterling;GBP;FHA;P;J;T1;;FHA
+IN;INDIA (inkl. Amindivene, Andamanøyene, Lakkadivene, Minicoy, Nicobarøyene og Sikkim);Indisk rupi;INR;GSP;G;J;T1;;G
+IO;BRITISK TERRITORIUM I INDIAHAVET, herunder CHAGOSØYENE;Mauritisk rupi/ Seychellisk rupi;MUR/ SCR;x;J;J;T1;;x
+IQ;IRAK;Iraksk dinar;IQD;x;J;J;T1;;x
+IR;IRAN (Den Islamske Republikk);Iransk rial;IRR;GSP;G;J;T1;;G
+IS;ISLAND;Islandsk krone;ISK;EFTA-EØS-FHA;J;C;T2;;EFTA
+IT;ITALIA;Euro;EUR;EU*-EØS-FHA;J;B;T2;;EU
+x;x;x;x;x;J;J;T1;;x
+J;x;x;x;x;J;J;T1;;x
+JE;JERSEY;Pund sterling;GBP;FHA;P;J;T1;;FHA
+JM;JAMAICA;Jamaicansk dollar;JMD;GSP;G;J;T1;;G
+JO;JORDAN;Jordansk dinar;JOD;FHA;P;J;T1;;FHA
+JP;JAPAN;Yen;JPY;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+K;x;x;x;x;J;J;T1;;x
+KE;KENYA;Kenyansk shilling;KES;GSP-MUL;G;J;T1;;G
+KG;KIRGISISTAN;Som;KGS;G+;G;J;T1;;GP
+KH;KAMBODSJA;Riel;KHR;GSP-MUL;G;J;T1;;G
+KI;KIRIBATI (inkl. Gilbertøyene, Fønixøyene og deler av Linjeøyene);Australsk dollar;AUD;GSP-MUL;G;J;T1;;G
+KM;KOMORENE (Anjouan, Store Komore og Mohali);Komorisk franc;KMF;GSP-MUL;G;J;T1;;G
+KN;SAINT KITTS OG NEVIS, herunder ST. CHRISTOPHER-NEVIS;Østkaribisk dollar;XCD;x;J;J;T1;;x
+KP;KOREA, DEN DEMOKRATISKE FOLKEREPUBLIKKEN (NORD-);Nordkoreansk won;KPW;x;J;J;T1;;x
+KR;KOREA, REPUBLIKKEN (SØR-);Won;KRW;FHA ;P;J;T1;;FHA
+KW;KUWAIT;Kuwaitisk dinar;KWD;FHA-GCC;P;J;T1;;FHA
+KY;CAYMANØYENE;Caymansk dollar;KYD;x;J;J;T1;;x
+KZ;KASAKHSTAN;Tenge;KZT;GSP ;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+L;x;x;x;x;J;J;T1;;x
+LA;LAOS, DEN DEMOKRATISKE FOLKEREPUBLIKKEN;Kip;LAK;GSP-MUL;G;J;T1;;G
+LB;LIBANON;Libanesisk pund;LBP;FHA;P;J;T1;;FHA
+LC;SAINT LUCIA;Østkaribisk dollar;XCD;x;J;J;T1;;x
+LI;LIECHTENSTEIN;Sveitsisk franc;CHF;EFTA-EØS-FHA;J;C;T2;;EFTA
+LK;SRI LANKA;Srilankisk rupi;LKR;G+;G;J;T1;;GP
+LR;LIBERIA;Liberisk dollar;LRD;GSP-MUL;G;J;T1;;G
+LS;LESOTHO;Loti;LSL;GSP-MUL SACU-FHA;G;J;T1;;G
+LT;LITAUEN;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+LU;LUXEMBOURG;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+LV;LATVIA;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+LY;LIBYA, DEN SOSIALISTISKE ARABISKE FOLKEREPUBLIKKEN;Libysk dollar;LYD;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+M;x;x;x;x;J;J;T1;;x
+MA;MAROKKO;Marokkansk dirham;MAD;FHA;P;J;T1;;FHA
+MC;MONACO;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+MD;MOLDOVA;Moldovisk leu;MDL;G+;G;J;T1;;GP
+ME;MONTENEGRO;Euro;EUR;FHA;P;J;T1;;FHA
+MF;SAINT MARTIN, fransk (nordre) del;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+MG;MADAGASKAR;Ariary;MGA;GSP-MUL;G;J;T1;;G
+MH;MARSHALLØYENE;US dollar;USD;x;J;J;T1;;x
+MK;NORD-MAKEDONIA;Denar;MKD;FHA;P;J;T1;;FHA
+ML;MALI;CFA-Franc BCEAO');XOF;GSP-MUL;G;J;T1;;G
+MM;MYANMAR (tidl. Burma);Kyat;MMK;GSP-MUL;G;J;T1;;G
+MN;MONGOLIA;Tugrik;MNT;G+;G;J;T1;;GP
+MO;MACAO, KINA;Pataca;MOP;x;J;J;T1;;x
+MP;NORDRE MARIANENE;US dollar;USD;x;J;J;T1;;x
+MQ;MARTINIQUE;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+MR;MAURITANIA, DEN ISLAMSKE REPUBLIKK;Ouguiya;MRO;GSP-MUL;G;J;T1;;G
+MS;MONTSERRAT;Østkaribisk dollar;XCD;x;J;J;T1;;x
+MT;MALTA;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+MU;MAURITIUS (inkl. Rodrigues, Agalegaøyene og Cargados Carajos);Mauritisk rupi;MUR;GSP;G;J;T1;;G
+MV;MALDIVENE;Maldivisk rupi (rufiyaa);MVR;GSP;G;J;T1;;G
+MW;MALAWI;Kwacha;MWK;GSP-MUL;G;J;T1;;G
+MX;MEXICO;Meksikansk ny peso;MXN;FHA;P;J;T1;;FHA
+MY;MALAYSIA (inkl.Peninsular-Malaysia, Sabah og Sarawak);Ringgit;MYR;GSP;G;J;T1;;G
+MZ;MOSAMBIK;Metical;MZM;GSP-MUL;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+N;x;x;x;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+NA;NAMIBIA;Dollar;NAD;GSP- SACU-FHA;G;J;T1;;G
+NC;NY-CALEDONIA (inkl. Lojalitetsøyene);CFP-Franc;XPF;x;J;J;T1;;x
+NE;NIGER;CFA-Franc BCEAO');XOF;GSP-MUL;G;J;T1;;G
+NF;NORFOLKØYA;Australsk dollar;AUD;x;J;J;T1;;x
+NG;NIGERIA;Naira;NGN; GSP;G;J;T1;;G
+NI;NICARAGUA;Cordoba;NIO;G+;G;J;T1;;GP
+NL;NEDERLAND;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+NO;NORGE;Norsk krone;NOK;EFTA-EØS-FHA;J;B;T2;;EFTA
+NP;NEPAL;Nepalsk rupi;NPR;GSP-MUL;G;J;T1;;G
+NR;NAURU;Australsk dollar;AUD;x;J;J;T1;;x
+NU;NIUE;New Zealandsk dollar;NZD;x;J;J;T1;;x
+NZ;NEW ZEALAND (inkl.Antipodeøyene, Aucklandøyene, Campbelløya, Chathamøyene og Kermadecøyene );New Zealandsk dollar;NZD;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+O;x;x;x;x;J;J;T1;;x
+OM;OMAN (inkl. deler av Musandam-halvøya);Omansk rial;OMR;FHA-GCC;P;J;T1;;FHA
+x;x;x;x;x;J;J;T1;;x
+P;x;x;x;x;J;J;T1;;x
+PA;PANAMA;Balboa;PAB;FHA;P;J;T1;;FHA
+PE;PERU;Ny sol;PEN;FHA ;P;J;T1;;FHA
+PF;FRANSK POLYNESIA (inkl. Australøyene, Gambierøyene, Marquesasøyene, Selskapsøyene (herunder Tahiti), Tuamotoøyene og Clippertonøya);CFP-Franc;XPF;x;J;J;T1;;x
+PG;PAPUA NY-GUINEA (inkl. Bismarckarkipelet og Nordre Salomonøyer);Kina;PGK;G+;G;J;T1;;GP
+PH;FILIPPINENE;Filippinsk peso;PHP;FHA;P;J;T1;;FHA
+PK;PAKISTAN;Pakistansk rupi;PKR;GSP;G;J;T1;;G
+PL;POLEN;Zloty;PLN;EU-EØS-FHA;J;B;T2;;EU
+PM;SAINT PIERRE OG MIQUELON;Euro;EUR;x;J;J;T1;;x
+PN;PITCAIRNØYA (inkl. Henderson, Ducie og Oeno);New Zealandsk dollar;NZD;x;J;J;T1;;x
+PR;PUERTO RICO;US Dollar;USD;x;J;J;T1;;x
+PS;PALESTINA;x;x;FHA;P;J;T1;;FHA
+PT;PORTUGAL;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+PW;PALAU (vestlige del av Karolineøyene);US dollar;USD;x;J;J;T1;;x
+PY;PARAGUAY;Guarani;PYG;G+;G;J;T1;;GP
+x;x;x;x;x;J;J;T1;;x
+Q;x;x;x;x;J;J;T1;;x
+QA;QATAR;Quatarsk rial;QAR;FHA-GCC;P;J;T1;;FHA
+x;x;x;x;x;J;J;T1;;x
+R;x;x;x;x;J;J;T1;;x
+RE;REUNION (inkl. Bassas da India, Europaøya, Glorieusesøyene, Juan de Nova og Tromelinøya);Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+RO;ROMANIA;Ny leu;RON;EU-EØS-FHA;J;B;T2;;EU
+RS;SERBIA;Serbisk dinar;RSD;FHA;P;J;T1;;FHA
+x;x;Euro;EUR;x;J;J;T1;;x
+RU;RUSSLAND;Russisk rubel;RUB;x;J;J;T1;;x
+RW;RWANDA;Rwandisk franc;RWF;GSP-MUL ;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+S;x;x;x;x;J;J;T1;;x
+SA;SAUDI-ARABIA;Saudiarabisk riyal;SAR;FHA-GCC;P;J;T1;;FHA
+SB;SALOMONØYENE;Salomonøy-dollar;SBD;GSP-MUL ;G;J;T1;;G
+SC;SEYCHELLENE (inkl. Aldabra, Amiranteøyene, Cosmoledoøyene og Farquhar);Seychellisk rupi;SCR;x;J;J;T1;;x
+SD;SUDAN;Sudansk pund;SDG;GSP-MUL;G;J;T1;;G
+SE;SVERIGE;Svensk krone;SEK;EU-EØS-FHA;J;B;T2;;EU
+SG;SINGAPORE;Singaporsk dollar;SGD;FHA;P;J;T1;;FHA
+SH;ST. HELENA (inkl. Ascension, Goughøya og Tristan da Cunha);St. Helena-tund;SHP;x;J;J;T1;;x
+SI;SLOVENIA;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+SJ;SVALBARD (inkl. Bjørnøya) og JAN MAYEN;Norsk krone;NOK;EFTA-FHA;J;C;T2;;EFTA
+SK;SLOVAKIA;Koruna - Euro;SKK - EUR;EU-EØS-FHA;J;B;T2;;EU
+SL;SIERRA LEONE;Leone;SLL;GSP-MUL ;G;J;T1;;G
+SM;SAN MARINO;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+SN;SENEGAL;CFA-Franc BCEAO');XOF;GSP-MUL;G;J;T1;;G
+SO;SOMALIA;Somalisk shilling;SOS;x;J;J;T1;;x
+SR;SURINAM;Surinamsk dollar;SRD;GSP;G;J;T1;;G
+ST;SAO TOME OG PRINCIPE;Dobra;STD;GSP-MUL ;G;J;T1;;G
+SS;SØR-SUDAN;Sør-sudansk pund;SSP;x;J;J;T1;;x
+SV;EL SALVADOR;Salvadoransk colon;SVC;G+;G;J;T1;;GP
+SX;SINT MAARTEN, søndre del;Nederl. antillegylden;ANG;x;J;J;T1;;x
+SY;SYRIA, DEN ARABISKE REPUBLIKKEN;Syrisk pund;SYP;x;J;J;T1;;x
+SZ;ESWATINI (tidl. SWAZILAND);Lilangeni;SZL;G+-SACU-FHA;G;J;T1;;GP
+x;x;x;x;x;J;J;T1;;x
+T;x;x;x;x;J;J;T1;;x
+TC;TURKS OG CAICOSØYENE;US Dollar;USD;x;J;J;T1;;x
+TD;TSJAD (Tchad);CFA-Franc BEAC²);XAF;x;J;J;T1;;x
+TF;FRANSKE SØRLIGE TERRITORIER (Amsterdamøya, Crozetøyene, Archipelaget, Kenguelenøyene, St.Paul);Euro;EUR;x;J;J;T1;;x
+TG;TOGO;CFA-Franc BCEAO');XOF;GSP-MUL;G;J;T1;;G
+TH;THAILAND;Baht;THB;GSP;G;J;T1;;G
+TJ;TADSJIKISTAN;Somoni;TJS; MUL;J;J;T1;;X
+TK;TOKELAU;New Zealandsk dollar;NZD;x;J;J;T1;;x
+TL;ØST-TIMOR;Amerikansk dollar;USD;GSP-MUL ;G;J;T1;;G
+TM;TURKMENISTAN;Manat;TMM;x;J;J;T1;;x
+TN;TUNISIA;Tunisisk dinar;TND;FHA;P;J;T1;;FHA
+TO;TONGA;Pa'anga;TOP;x;J;J;T1;;x
+TR;TYRKIA;Ny tyrkisk lire;TRY;FHA;P;J;T1;;FHA
+TT;TRINIDAD OG TOBAGO;Trinidadisk dollar;TTD;GSP;G;J;T1;;G
+TV;TUVALU, herunder ELLICEØYENE;Australsk dollar;AUD;GSP-MUL ;G;J;T1;;G
+TW;TAIWAN, PROVINS AV KINA (inkl. Penghuøyene (Pescadorene));Ny taiwansk dollar;TWD;x;J;J;T1;;x
+TZ;TANZANIA, DEN FORENTE REPUBLIKKEN;Tanzanisk shilling;TZS;GSP-MUL;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+U;x;x;x;x;J;J;T1;;x
+UA;UKRAINA;Hryvnia;UAH;FHA;P;J;T1;;FHA
+UG;UGANDA;Ugandisk shilling;UGX;GSP-MUL;G;J;T1;;G
+UM;DE FORENTE STATERS MINDRE UTENFORLIGGENDE ØYER ( inkl. Bakerøya, Howlandøya, Jarvisøya, Johnstonatollet, Kingman Reef, Midwayøyene, Navassaøya, Palmyra-atollet og Wakeøya);US dollar;USD;x;J;J;T1;;x
+US;DE FORENTE STATER (USA);US dollar;USD;x;J;J;T1;;x
+UY;URUGUAY;Uruguayisk peso;UYU;GSP;G;J;T1;;G
+UZ;USBEKISTAN;Usbekistansk sum;UZS;G+;G;J;T1;;GP
+x;x;x;x;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+V;x;x;x;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+VA;VATIKANSTATEN (DEN HELLIGE STOL);Euro;EUR;x;J;J;T1;;x
+VC;SAINT VINCENT OG GRENADINENE (inkl. de nordre Grenadinøyer, herunder Bequia);Østkaribisk dollar;XCD;x;J;J;T1;;x
+VE;VENEZUELA;Bolivar fuerte;VEF;x;J;J;T1;;x
+VG;JOMFRUØYENE (GB) (inkl. Anegada, Jost van Dyke, Tortola og Virgin Gordas);US dollar;USD;x;J;J;T1;;x
+VI;JOMFRUØYENE (US) (inkl. Saint Croix, Saint John og Saint Thomas);US dollar;USD;x;J;J;T1;;x
+VN;VIETNAM;Dong;VND;GSP;G;J;T1;;G
+VU;VANUATU;Vatu;VUV;GSP-MUL ;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+W;x;x;x;x;J;J;T1;;x
+WF;WALLIS OG FUTUNA;CFP-Franc;XPF;x;J;J;T1;;x
+WS;SAMOA;Tala;WST;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+X;x;x;x;x;J;J;T1;;x
+XB;KANARIØYENE;Euro;EUR;EU-EØS-FHA;J;B;T2;;EU
+XC;CEUTA OG MELILLA;Euro;EUR;EØS-FHA;J;B;T2;;EU
+XK;KOSOVO;Euro; EUR;G+;G;J;T1;;GP
+x;x;x;x;x;J;J;T1;;x
+Y;x;x;x;x;J;J;T1;;x
+YE;JEMEN (inkl. Sokotra);Jemenittisk rial;YER;GSP-MUL;G;J;T1;;G
+YT;MAYOTTE;Euro;EUR;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x
+Z;x;x;x;x;J;J;T1;;x
+ZA;SØR-AFRIKA (inkl. Marionøyene og Prince Edwardøyene);Rand;ZAR;GSP-SACU-FHA;G;J;T1;;G
+ZM;ZAMBIA;Kwacha;ZMW;GSP-MUL;G;J;T1;;G
+ZW;ZIMBABWE;Zimbabwisk dollar;ZWD;GSP-MUL;G;J;T1;;G
+x;x;x;x;x;J;J;T1;;x
+1 ) CFA-Franc BCEAO-ansvarlig myndighet: Banque Centrale des États de l' Afrique de l' Ouest;x;x;x;x;J;J;T1;;x
+² ) CFA-Franc BEAC-ansvarlig myndighet: Banque des États de l' Afrique Centrale.;x;x;x;x;J;J;T1;;x
+*) Livigno og Campione d'Italia er unntatt fra EU. Svalbard er unntatt fra EØS-avtalen;x;x;x;x;J;J;T1;;x
+x;x;x;x;x;J;J;T1;;x

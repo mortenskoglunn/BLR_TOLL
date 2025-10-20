@@ -1,0 +1,112 @@
+Linjenr;Firmanavn;Adresse;Postkode;Poststed;Land;AutNo;Priskode;Kundenummer;Valutakode;Merknad;Incoterm;Incosted;Kode
+1;Elbers GmbH & Co. KG;Ottersweg 6 ;47624;Kevelaer;DE;DE/2650/EA/0184;3;51341;EUR;Notat;FCA;Kevelaer;EU
+2;Flora Holland B.V.;Middel Broekweg;2675 KB;Honselersdijk;NL;NL/074/14/4030;3;949;EUR;Notat;FCA;Schiphol;EU
+3;Flora Nordic B.V.;Sierteeltstraat 25 ;1431 GM;Aalsmeer;NL;NL/108/09/2444;3;924;EUR;Notat;FCA;Aalsmeer;EU
+4;Hoek Flowers B.V.;Laan van verhof 77;2231 DZ;Rijnsburg;NL;NL/074/19/5310;3;52152;EUR;Notat;FCA;Rijnsburg;EU
+5;Marktverband Bremen GmbH;Paul-Feller-Str. 24 ;28199;Bremen;DE;DE/2300/EA/0066 ;2;953;EUR;Notat;FCA;Bremen;EU
+6;Noviflora Holland B.V. ;Venus 240 ;2675 LN ;Honselersdijk;NL;NL/333/01/188;3;51967;EUR;Notat;FCA;Honselersdijk;EU
+7;Plantas A/S;Grydhøjparken 12;8381;Tilst;DK;DK/06/159888;1;593;DKK;Notat;FCA;Tilst;EU
+8;Slikweid B.V.;Dorpsstraat 13;1921 BA;Akersloot;NL;KEREXNBIP5280;3;51672;EUR;Notat;FCA;Schiphol;EU
+9;Blomsterringen avd. Bergen;Liavegen 10;5132;Nyborg;NO;;C;300;;Notat;;;NO
+18;Blomsterringen avd. Oslo;Sanitetsveien 15;2013;Skjetten;NO;;A;120;;Notat;;;NO
+19;Blomsterringen avd. Rogaland;Koppholen 13;4313;Sandnes;NO;;B;160;;Notat;;;NO
+20;Blomsterringen avd. Vestfold;Borgeskogen;3160;Stokke;NO;;A;140;;Notat;;;NO
+21;Blomsterringen avd. Trondheim;Østre Rosten 100;7075;Tiller;NO;;D;150;;Notat;;;NO
+22;Blomsterringen avd. Nordvest;Plutoveien 1;6419;Molde;NO;;F;170;;Notat;;;NO
+23;Blomsterringen avd. Nord-Norge;;;Tromsø;NO;;G;180;;Notat;;;NO
+24;Blomsterringen avd. 4;;;;NO;;H;190;;Notat;;;NO
+25;Ambius;;;;NO;;E;999999;;Notat;;;NO
+26;Gediflora;Schierveldestraat 14;8840;Oostnieuwkerke;Belgia;BE 1015;;51573;EUR;Notat;FCA;Aalsmeer;
+27;Hishtil Afula ;Eilon Tavor Ind. Zone;1812601;Eilon Tavor Ind. Zone;Israel;511352718 / K;;51488;EUR;Notat;FCA;Aalsmeer;
+28;M.Koppe B.V;Fazantlaan 10;3852 AM;Ermelo;Nederland;Fakturaerklæring;;912;EUR;Notat;FCA;Aalsmeer;
+29;Flower Hub Limited;930 High Road;N12 9RT;London;Storbritannia;;;51643;EUR;Notat;FCA;Aalsmeer;
+30;Nieuwkoop;Hoofdweg 111;1424 PE;De Kwakel;Nederland;NL/108/06/1944;;51661;EUR;Notat;FCA;Aalsmeer;
+31;Dymak A/S;Holkebjergsvej 120;5250;Odense SV;Danmark;Uten;;954;DKK;Notat;FCA;Aalsmeer;
+32;"Danziger ""Dan"" Flower Farm";Po Box 186;5029700;Mishmar HaShiva;Israel;Aut.055732366;;916;EUR;Notat;FCA;Aalsmeer;
+33;Danziger (Beauty Line Ltd);Po Box 186;5029700;Mishmar HaShiva;Kenya;KEREXNKUF0132016;;916;EUR;Notat;FCA;Aalsmeer;
+34;Steenbek (DK);Korden 15;8751;Gedved;Danmark;;;51869;;Notat;FCA;Aalsmeer;
+35;Steenbek (UG);Korden 15;8752;Gedved;Uganda;;;51869;;Notat;FCA;Aalsmeer;
+36;Steenbek (ID);Korden 15;8753;Gedved;Indonesia;;;51869;;Notat;FCA;Aalsmeer;
+37;Steenbek (Florensis);Korden 15;8753;Gedved;Etiophia;;;51869;;Notat;FCA;Aalsmeer;
+38;Syngenta Seeds B.V. (NL);Westeinde 62;1600 AA;Enkhuizen;Nederland;NL/102/01/670;;939;EUR;Notat;FCA;Aalsmeer;
+39;Syngenta Seeds B.V. (KE);Westeinde 63;1601 AA;Enkhuizen;Kenya;KEREXNBIP5038;;940;EUR;Notat;FCA;Aalsmeer;
+40;Gasa Group Holland B.V.;;;;;NL/108/09/2505;;;EUR;;EXW;Aalsmeer;
+41;;;;;;;;;;;;;
+42;;;;;;;;;;;;;
+43;;;;;;;;;;;;;
+44;;;;;;;;;;;;;
+45;;;;;;;;;;;;;
+46;;;;;;;;;;;;;
+47;;;;;;;;;;;;;
+48;;;;;;;;;;;;;
+49;;;;;;;;;;;;;
+50;;;;;;;;;;;;;
+51;;;;;;;;;;;;;
+52;;;;;;;;;;;;;
+53;;;;;;;;;;;;;
+54;;;;;;;;;;;;;
+55;;;;;;;;;;;;;
+56;;;;;;;;;;;;;
+57;;;;;;;;;;;;;
+58;;;;;;;;;;;;;
+59;;;;;;;;;;;;;
+60;;;;;;;;;;;;;
+61;;;;;;;;;;;;;
+62;;;;;;;;;;;;;
+63;;;;;;;;;;;;;
+64;;;;;;;;;;;;;
+65;;;;;;;;;;;;;
+66;;;;;;;;;;;;;
+67;;;;;;;;;;;;;
+68;;;;;;;;;;;;;
+69;;;;;;;;;;;;;
+70;;;;;;;;;;;;;
+71;;;;;;;;;;;;;
+72;;;;;;;;;;;;;
+73;;;;;;;;;;;;;
+74;;;;;;;;;;;;;
+75;;;;;;;;;;;;;
+76;;;;;;;;;;;;;
+77;;;;;;;;;;;;;
+78;;;;;;;;;;;;;
+79;;;;;;;;;;;;;
+80;;;;;;;;;;;;;
+81;;;;;;;;;;;;;
+82;;;;;;;;;;;;;
+83;;;;;;;;;;;;;
+84;;;;;;;;;;;;;
+85;;;;;;;;;;;;;
+86;;;;;;;;;;;;;
+87;;;;;;;;;;;;;
+88;;;;;;;;;;;;;
+89;;;;;;;;;;;;;
+90;;;;;;;;;;;;;
+91;;;;;;;;;;;;;
+92;;;;;;;;;;;;;
+93;;;;;;;;;;;;;
+94;;;;;;;;;;;;;
+95;;;;;;;;;;;;;
+96;;;;;;;;;;;;;
+97;;;;;;;;;;;;;
+98;;;;;;;;;;;;;
+99;;;;;;;;;;;;;
+100;;;;;;;;;;;;;
+101;;;;;;;;;;;;;
+102;;;;;;;;;;;;;
+103;;;;;;;;;;;;;
+104;;;;;;;;;;;;;
+105;;;;;;;;;;;;;
+106;;;;;;;;;;;;;
+107;;;;;;;;;;;;;
+108;;;;;;;;;;;;;
+109;;;;;;;;;;;;;
+110;;;;;;;;;;;;;
+111;;;;;;;;;;;;;
+112;;;;;;;;;;;;;
+113;;;;;;;;;;;;;
+114;;;;;;;;;;;;;
+115;;;;;;;;;;;;;
+116;;;;;;;;;;;;;
+117;;;;;;;;;;;;;
+118;;;;;;;;;;;;;
+119;;;;;;;;;;;;;
