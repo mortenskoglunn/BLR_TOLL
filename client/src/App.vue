@@ -147,6 +147,12 @@ export default {
         route: '/company-search'
       },
       {
+        title: 'Frihandelssøk',
+        subtitle: 'Søk i frihandelsdatabase',
+        icon: 'mdi-earth',
+        route: '/frihandel-search'
+      },
+      {
         title: 'Importerte Produkter',
         subtitle: 'Se alle importerte produkter',
         icon: 'mdi-package-variant',

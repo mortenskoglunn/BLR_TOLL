@@ -56,6 +56,12 @@ const routes = [
     name: 'CompanySearch',
     component: () => import('@/views/CompanySearch.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/frihandel-search',
+    name: 'FrihandelSearch',
+    component: () => import('@/views/FrihandelSearch.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
