@@ -50,6 +50,12 @@ const routes = [
     name: 'ProductSearch',
     component: () => import('@/views/ProductSearch.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/company-search',
+    name: 'CompanySearch',
+    component: () => import('@/views/CompanySearch.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

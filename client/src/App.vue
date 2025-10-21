@@ -141,6 +141,12 @@ export default {
         route: '/product-search'
       },
       {
+        title: 'Firmasøk',
+        subtitle: 'Søk i firmadatabase',
+        icon: 'mdi-office-building',
+        route: '/company-search'
+      },
+      {
         title: 'Importerte Produkter',
         subtitle: 'Se alle importerte produkter',
         icon: 'mdi-package-variant',

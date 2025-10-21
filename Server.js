@@ -14,7 +14,8 @@ const authRoutes = require('./routes/auth');
 const databaseRoutes = require('./routes/database');
 const uploadRoutes = require('./routes/upload');
 const productsRoutes = require('./routes/products');
-const blomsterImportRoutes = require('./routes/blomster_import'); // NY IMPORT
+const blomsterImportRoutes = require('./routes/blomster_import');
+const companiesRoutes = require('./routes/companies'); // NY IMPORT
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -101,13 +102,15 @@ app.get('/test-db', async (req, res) => {
     const result = await query('SELECT COUNT(*) as UserCount FROM dbo.users');
     const productsResult = await query('SELECT COUNT(*) as ProductsCount FROM dbo.products');
     const blomsterImportResult = await query('SELECT COUNT(*) as BlomsterImportCount FROM dbo.blomster_import');
+    const firmaResult = await query('SELECT COUNT(*) as FirmaCount FROM dbo.Firma'); // NY
     
-    if (result.success && productsResult.success && blomsterImportResult.success) {
+    if (result.success && productsResult.success && blomsterImportResult.success && firmaResult.success) {
       res.json({ 
         message: 'Database tilkobling OK',
         users: result.data[0].UserCount,
         products: productsResult.data[0].ProductsCount,
         blomster_import: blomsterImportResult.data[0].BlomsterImportCount,
+        firma: firmaResult.data[0].FirmaCount, // NY
         server: process.env.DB_SERVER,
         database: process.env.DB_NAME
       });
@@ -133,7 +136,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/database', databaseRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/products', productsRoutes);
-app.use('/api/blomster-import', blomsterImportRoutes); // NY ROUTE
+app.use('/api/blomster-import', blomsterImportRoutes);
+app.use('/api/companies', companiesRoutes); // NY ROUTE
 console.log('✅ API routes registrert');
 
 // Development route
@@ -169,6 +173,12 @@ app.get('/', (req, res) => {
         single: 'GET /api/blomster-import/:id',
         delete: 'DELETE /api/blomster-import/:id',
         stats: 'GET /api/blomster-import/stats/summary'
+      },
+      companies: {
+        search: 'GET /api/companies/search',
+        single: 'GET /api/companies/:id',
+        export: 'POST /api/companies/export',
+        stats: 'GET /api/companies/stats/summary'
       },
       database: {
         search: 'GET /api/database/search?blomst=navn',
@@ -228,6 +238,7 @@ app.use((req, res) => {
       'GET /api/products',
       'GET /api/products/search',
       'GET /api/blomster-import',
+      'GET /api/companies/search',
       'GET /api/database/search',
       'POST /api/upload/excel'
     ]
@@ -259,6 +270,7 @@ const server = app.listen(PORT, () => {
   console.log('   - /api/auth           → Autentisering');
   console.log('   - /api/products       → Products-tabellen');
   console.log('   - /api/blomster-import → Blomster_import-tabellen');
+  console.log('   - /api/companies      → Firma-tabellen');
   console.log('   - /api/database       → Database-søk');
   console.log('   - /api/upload         → Excel import/export');
   console.log('');
