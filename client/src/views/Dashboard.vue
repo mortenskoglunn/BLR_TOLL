@@ -9,24 +9,6 @@
       </v-col>
     </v-row>
 
-    <!-- Stats kort -->
-    <v-row>
-      <v-col cols="12" md="3" v-for="stat in statsCards" :key="stat.title">
-        <v-card :color="stat.color" dark>
-          <v-card-text>
-            <div class="d-flex align-center">
-              <div>
-                <h3 class="text-h5">{{ stat.value }}</h3>
-                <p class="mb-0">{{ stat.title }}</p>
-              </div>
-              <v-spacer></v-spacer>
-              <v-icon size="40">{{ stat.icon }}</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
     <!-- Quick Actions -->
     <v-row class="mt-6">
       <v-col cols="12">
@@ -110,7 +92,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 export default {
@@ -118,41 +100,8 @@ export default {
   setup() {
     // Raw stats data fra API
     const statsData = ref({
-      total_products: 0,
-      unique_categories: 0,
-      unique_tariff_codes: 0,
-      products_with_art1: 0
+      total_products: 0
     })
-    
-    const categoryStats = ref([])
-    
-    // Computed stats cards for display
-    const statsCards = computed(() => [
-      { 
-        title: 'Totalt Produkter', 
-        value: statsData.value.total_products || 0, 
-        icon: 'mdi-package-variant', 
-        color: 'primary' 
-      },
-      { 
-        title: 'Kategorier', 
-        value: statsData.value.unique_categories || 0, 
-        icon: 'mdi-shape', 
-        color: 'success' 
-      },
-      { 
-        title: 'Tariffnummer', 
-        value: statsData.value.unique_tariff_codes || 0, 
-        icon: 'mdi-tag-multiple', 
-        color: 'info' 
-      },
-      { 
-        title: 'Med Art1', 
-        value: statsData.value.products_with_art1 || 0, 
-        icon: 'mdi-barcode', 
-        color: 'warning' 
-      }
-    ])
     
     const quickActions = ref([
       { 
@@ -166,6 +115,12 @@ export default {
         route: '/product-search', 
         icon: 'mdi-database-search', 
         color: 'success' 
+      },
+      { 
+        title: 'Importerte Produkter', 
+        route: '/products-import', 
+        icon: 'mdi-package-variant', 
+        color: 'info' 
       }
     ])
     
@@ -199,20 +154,16 @@ export default {
         const response = await axios.get('/api/database/stats')
         
         if (response.data.success) {
-          statsData.value = response.data.stats
-          categoryStats.value = response.data.categoryStats || []
+          statsData.value = {
+            total_products: response.data.stats.total_products || 0
+          }
           console.log('✅ Statistikk lastet:', statsData.value)
         }
       } catch (error) {
         console.error('❌ Failed to load stats:', error)
-        // Behold default verdier hvis det feiler
         statsData.value = {
-          total_products: 0,
-          unique_categories: 0,
-          unique_tariff_codes: 0,
-          products_with_art1: 0
+          total_products: 0
         }
-        categoryStats.value = []
       }
     }
     
@@ -221,7 +172,6 @@ export default {
     })
     
     return {
-      statsCards,
       quickActions,
       recentActivity
     }
