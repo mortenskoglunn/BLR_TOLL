@@ -73,6 +73,7 @@ BLR_TOLL/
 │   │   ├── ExcelImport.vue        # Excel fil-import
 │   │   ├── ExcelTemplates.vue     # Mal-administrasjon
 │   │   ├── Products.vue           # Produktliste
+│   │   ├── Products_import.vue    # Importerte produkter (blomster_import)
 │   │   ├── AdminUsers.vue         # Brukeradministrasjon
 │   │   └── TestView.vue           # API-test side
 │   ├── router/
@@ -88,7 +89,7 @@ BLR_TOLL/
 
 Systemet har tre brukerroller:
 
-- **Admin** - Full tilgang til alle funksjoner inkludert brukeradministrasjon
+- **Admin** - Full tilgang til alle funksjoner inkludert brukeradministrasjon og mulighet til å tømme produkttabeller
 - **User** - Standard bruker med tilgang til import og søk
 - **Viewer** - Kun lesetilgang til produktdata
 
@@ -117,7 +118,33 @@ Systemet har tre brukerroller:
 - Detaljvisning med fullstendig produktinformasjon
 - Kopiering av produktdata til utklippstavle
 
-### 3. Excel Import
+### 3. Importerte Produkter (Products_import.vue)
+Visning og administrasjon av produkter fra `blomster_import` tabellen:
+
+**Statistikk:**
+- Totalt antall produkter
+- Antall leverandører
+- Antall kategorier
+- Import siste 24 timer
+
+**Filter og søk:**
+- Fritekst-søk i alle felter
+- Filtrer på leverandør
+- Filtrer på kategori
+
+**Funksjoner:**
+- Vis produktdetaljer
+- Slett enkeltprodukter
+- Eksporter til Excel
+- **Tøm tabell** (kun admin) - sletter alle produkter fra blomster_import
+
+**Produkttabell:**
+- Sortérbar kolonneoversikt
+- 10/25/50/100 produkter per side
+- Fast header ved scrolling
+- Responsive kolonner med alignment
+
+### 4. Excel Import
 
 **Trinn 1: Velg Import-mal**
 - Liste over aktive import-maler
@@ -134,7 +161,7 @@ Systemet har tre brukerroller:
 - Vellykkede importer
 - Feilede importer med detaljer
 
-### 4. Excel Maler
+### 5. Excel Maler
 
 Administrasjon av import-maler for ulike leverandører:
 
@@ -164,7 +191,7 @@ Koble Excel-kolonner til database-felt i `blomster_import` tabellen:
 - `price_nok`, `quantity`, `unit`
 - `category`, `hs_code`, `country_of_origin`, `weight`
 
-### 5. Brukeradministrasjon (kun Admin)
+### 6. Brukeradministrasjon (kun Admin)
 
 **Bruker-funksjoner:**
 - Opprett nye brukere
@@ -187,14 +214,14 @@ Koble Excel-kolonner til database-felt i `blomster_import` tabellen:
 - Sletting krever bekreftelse ("SLETT")
 - Passordendring ved redigering
 
-### 6. Produktliste
+### 7. Produktliste
 - Fullstendig produktoversikt
 - Filtrering på leverandør og kategori
 - Eksport til Excel
 - Produktdetaljer med all informasjon
 - Redigering og sletting
 
-### 7. Test API
+### 8. Test API
 Testside for utvikling og feilsøking:
 - Database-forbindelsestest
 - Blomst-søk test
@@ -343,15 +370,21 @@ Hovedtabell for importerte produkter:
 - `POST /api/upload/excel` - Last opp og importer Excel
 - `POST /api/upload/export` - Eksporter produkter til Excel
 
-### Produkter
-- `GET /api/products` - Hent alle produkter
-- `GET /api/products/search` - Søk produkter
-- `GET /api/database/products` - Hent fra database
-- `DELETE /api/products/:id` - Slett produkt
+### Produkter (blomster_import)
+- `GET /api/blomster-import` - Hent alle produkter
+- `GET /api/blomster-import/:id` - Hent ett produkt
+- `POST /api/blomster-import/clear` - Tøm alle produkter (admin only)
+- `POST /api/blomster-import/batch-delete` - Slett flere produkter
+- `PUT /api/blomster-import/:id` - Oppdater produkt
+- `DELETE /api/blomster-import/:id` - Slett produkt
+- `GET /api/blomster-import/stats/summary` - Hent statistikk
+- `GET /api/blomster-import/filters/unique-values` - Hent unike verdier for filtre
 
 ### Database
 - `GET /api/database/stats` - Hent statistikk
 - `GET /api/database/search` - Søk i database
+- `GET /api/database/products` - Hent produkter
+- `DELETE /api/products/:id` - Slett produkt
 - `GET /health` - Health check
 
 ## 🚢 Deployment
@@ -382,6 +415,48 @@ NODE_ENV=production
 - Variabler: camelCase (f.eks. `searchResults`)
 - Database-felt: snake_case eller PascalCase avhengig av kilde
 
+### Vuetify 3 Spesifikke Notater
+
+**VIKTIG: Vuetify 3 bruker nye property-navn i v-data-table:**
+
+❌ **Vuetify 2 (gammelt):**
+```javascript
+const headers = [
+  { text: 'ID', value: 'id' }
+]
+```
+
+✅ **Vuetify 3 (nytt):**
+```javascript
+const headers = [
+  { title: 'ID', key: 'id' }
+]
+```
+
+**Endringer fra Vuetify 2 til 3:**
+- `text` → `title` (for kolonneoverskrift)
+- `value` → `key` (for data-binding)
+
+**CSS Deep Selector:**
+```css
+/* Gammelt (Vuetify 2) */
+.v-data-table >>> .v-data-table-header th { }
+
+/* Nytt (Vuetify 3) */
+:deep(.v-data-table-header) th { }
+:deep(.v-data-table__th) { }
+```
+
+**Fixed Header i Data Table:**
+```vue
+<v-data-table
+  fixed-header
+  height="600px"
+  :headers="headers"
+  :items="items"
+/>
+```
+
 ## 🐛 Feilsøking
 
 ### Vanlige problemer
@@ -400,6 +475,16 @@ NODE_ENV=production
 - Verifiser at kolonne-mapping er korrekt
 - Sjekk at påkrevde felt er mappet
 - Se etter feilmeldinger i import-resultatet
+
+**Problem: Kolonneoverskrifter vises ikke i v-data-table**
+- Sjekk at du bruker `title` og `key` (ikke `text` og `value`)
+- Verifiser at Vuetify 3 er installert korrekt
+- Bruk `:deep()` selector i CSS for å style headers
+
+**Problem: "Kun administratorer kan tømme hele tabellen"**
+- Funksjonen krever admin-rolle
+- Sjekk brukerens rolle i systemet
+- Kun admin-brukere kan bruke "Tøm tabell"-funksjonen
 
 ## 📞 Support
 

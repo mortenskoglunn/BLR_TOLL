@@ -167,6 +167,63 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// TØM ALLE PRODUKTER (CLEAR ALL)
+router.post('/clear', authenticateToken, async (req, res) => {
+  try {
+    const { clearAll } = req.body;
+
+    if (!clearAll) {
+      return res.status(400).json({
+        success: false,
+        message: 'clearAll må være true for å slette alle produkter'
+      });
+    }
+
+    // Sjekk brukerrolle - kun admin kan tømme hele tabellen
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Kun administratorer kan tømme hele tabellen'
+      });
+    }
+
+    // Tell antall produkter før sletting
+    const countResult = await query('SELECT COUNT(*) as total FROM dbo.blomster_import');
+    const totalCount = countResult.data[0]?.total || 0;
+
+    if (totalCount === 0) {
+      return res.json({
+        success: true,
+        message: 'Tabellen er allerede tom',
+        deletedCount: 0
+      });
+    }
+
+    // Slett ALLE produkter
+    const deleteResult = await query('DELETE FROM dbo.blomster_import');
+
+    if (!deleteResult.success) {
+      throw new Error('Kunne ikke slette produkter');
+    }
+
+    console.log(`🗑️ ALLE ${totalCount} produkter slettet fra blomster_import av ${req.user.username}`);
+
+    res.json({
+      success: true,
+      message: `${totalCount} produkter slettet fra blomster_import`,
+      deletedCount: totalCount
+    });
+
+  } catch (error) {
+    console.error('Clear all products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Kunne ikke tømme tabell',
+      error: error.message
+    });
+  }
+});
+
 // SLETT IMPORTERT PRODUKT
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {

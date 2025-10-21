@@ -100,6 +100,11 @@
               <v-icon left>mdi-download</v-icon>
               Eksporter til Excel
             </v-btn>
+
+            <v-btn color="error" class="ml-2" @click="showClearDialog = true" :disabled="products.length === 0">
+              <v-icon left>mdi-delete-sweep</v-icon>
+              Tøm tabell
+            </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
@@ -129,6 +134,8 @@
               :footer-props="{
                 'items-per-page-options': [10, 25, 50, 100]
               }"
+              fixed-header
+              height="600px"
             >
               <!-- Invoice Date -->
               <template v-slot:item.Invoice_Date="{ item }">
@@ -201,6 +208,41 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Dialog for å bekrefte tømming av tabell -->
+    <v-dialog v-model="showClearDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="error white--text">
+          <v-icon left color="white">mdi-alert</v-icon>
+          Bekreft sletting
+        </v-card-title>
+
+        <v-card-text class="pt-4">
+          <v-alert type="warning" outlined>
+            <strong>ADVARSEL:</strong> Dette vil slette ALLE {{ products.length }} produkter fra blomster_import-tabellen for din bruker.
+          </v-alert>
+
+          <p class="mt-4">
+            Denne handlingen kan ikke angres. Er du sikker på at du vil fortsette?
+          </p>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-btn text @click="closeClearDialog">
+            Avbryt
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn 
+            color="error" 
+            @click="clearAllProducts"
+            :loading="clearingProducts"
+          >
+            <v-icon left>mdi-delete-sweep</v-icon>
+            Tøm tabell
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Produktdetaljer dialog -->
     <v-dialog v-model="showDetailsDialog" max-width="900px" scrollable>
@@ -459,6 +501,8 @@ export default {
     const filterCategory = ref(null)
     const showDetailsDialog = ref(false)
     const selectedProduct = ref(null)
+    const showClearDialog = ref(false)
+    const clearingProducts = ref(false)
     
     // Snackbar
     const showSnackbar = ref(false)
@@ -466,20 +510,82 @@ export default {
     const snackbarColor = ref('success')
     const snackbarIcon = ref('mdi-check')
     
-    // Table headers for blomster_import table
+    // Table headers for blomster_import table with better visibility
     const headers = [
-      { text: 'ID', value: 'id', width: '80px' },
-      { text: 'Fakturadato', value: 'Invoice_Date' },
-      { text: 'Beskrivelse', value: 'Description' },
-      { text: 'EAN', value: 'EAN' },
-      { text: 'Leverandør', value: 'supplier_name' },
-      { text: 'Pris', value: 'Price' },
-      { text: 'Antall', value: 'quantity_calc' },
-      { text: 'Tariffnr', value: 'Tariff_Number' },
-      { text: 'Land', value: 'Country_Of_Origin_Raw' },
-      { text: 'Kategori', value: 'category' },
-      { text: 'Importert', value: 'created_at' },
-      { text: 'Handlinger', value: 'actions', sortable: false, width: '120px' }
+      { 
+        title: 'ID',
+        key: 'id', 
+        width: '80px',
+        align: 'start',
+        sortable: true
+      },
+      { 
+        title: 'Fakturadato',
+        key: 'Invoice_Date',
+        align: 'start',
+        sortable: true
+      },
+      { 
+        title: 'Beskrivelse',
+        key: 'Description',
+        align: 'start',
+        sortable: true
+      },
+      { 
+        title: 'EAN',
+        key: 'EAN',
+        align: 'center',
+        sortable: true
+      },
+      { 
+        title: 'Leverandør',
+        key: 'supplier_name',
+        align: 'start',
+        sortable: true
+      },
+      { 
+        title: 'Pris',
+        key: 'Price',
+        align: 'end',
+        sortable: true
+      },
+      { 
+        title: 'Antall',
+        key: 'quantity_calc',
+        align: 'center',
+        sortable: false
+      },
+      { 
+        title: 'Tariffnr',
+        key: 'Tariff_Number',
+        align: 'center',
+        sortable: true
+      },
+      { 
+        title: 'Land',
+        key: 'Country_Of_Origin_Raw',
+        align: 'center',
+        sortable: true
+      },
+      { 
+        title: 'Kategori',
+        key: 'category',
+        align: 'start',
+        sortable: true
+      },
+      { 
+        title: 'Importert',
+        key: 'created_at',
+        align: 'start',
+        sortable: true
+      },
+      { 
+        title: 'Handlinger',
+        key: 'actions', 
+        sortable: false, 
+        width: '120px',
+        align: 'center'
+      }
     ]
     
     // Computed
@@ -530,7 +636,6 @@ export default {
     const loadProducts = async () => {
       loading.value = true
       try {
-        // Henter fra blomster_import via ny endpoint
         const response = await axios.get('/api/blomster-import', {
           params: { 
             limit: 5000,
@@ -565,7 +670,6 @@ export default {
       }
       
       try {
-        // Bruk blomster-import endpoint
         const response = await axios.delete(`/api/blomster-import/${product.id}`)
         if (response.data.success) {
           showNotification('Produkt slettet', 'success', 'mdi-delete')
@@ -577,6 +681,40 @@ export default {
           'error',
           'mdi-alert'
         )
+      }
+    }
+
+    const closeClearDialog = () => {
+      showClearDialog.value = false
+    }
+
+    const clearAllProducts = async () => {
+      clearingProducts.value = true
+      try {
+        // Kall backend endpoint for å slette alle produkter
+        const response = await axios.post('/api/blomster-import/clear', {
+          clearAll: true
+        })
+        
+        if (response.data.success) {
+          showNotification(
+            `${response.data.deletedCount} produkter slettet fra tabellen`, 
+            'success', 
+            'mdi-delete-sweep'
+          )
+          products.value = []
+          closeClearDialog()
+          // Last på nytt for å oppdatere statistikk
+          loadProducts()
+        }
+      } catch (error) {
+        showNotification(
+          `Feil ved tømming av tabell: ${error.response?.data?.message || error.message}`,
+          'error',
+          'mdi-alert'
+        )
+      } finally {
+        clearingProducts.value = false
       }
     }
     
@@ -658,6 +796,8 @@ Kategori: ${product.category || '-'}
       filterCategory,
       showDetailsDialog,
       selectedProduct,
+      showClearDialog,
+      clearingProducts,
       headers,
       
       // Computed
@@ -679,6 +819,8 @@ Kategori: ${product.category || '-'}
       loadProducts,
       viewDetails,
       deleteProduct,
+      closeClearDialog,
+      clearAllProducts,
       exportProducts,
       copyToClipboard,
       formatPrice,
@@ -691,6 +833,37 @@ Kategori: ${product.category || '-'}
 <style scoped>
 .v-data-table {
   border-radius: 8px;
+}
+
+/* Sørg for at headers er synlige og tydelige - Vuetify 3 syntax */
+:deep(.v-data-table-header) th {
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  background-color: #f5f5f5 !important;
+  border-bottom: 2px solid #e0e0e0 !important;
+  color: #1976D2 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:deep(.v-data-table__th) {
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  background-color: #f5f5f5 !important;
+  border-bottom: 2px solid #e0e0e0 !important;
+  color: #1976D2 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:deep(thead) {
+  background-color: #f5f5f5 !important;
+}
+
+:deep(th.text-start),
+:deep(th.text-center),
+:deep(th.text-end) {
+  font-weight: 700 !important;
 }
 
 .text-wrap {
