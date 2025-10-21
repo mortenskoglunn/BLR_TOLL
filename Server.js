@@ -16,7 +16,8 @@ const uploadRoutes = require('./routes/upload');
 const productsRoutes = require('./routes/products');
 const blomsterImportRoutes = require('./routes/blomster_import');
 const companiesRoutes = require('./routes/companies');
-const frihandelRoutes = require('./routes/frihandel'); // NY IMPORT
+const frihandelRoutes = require('./routes/frihandel');
+const hseunoRoutes = require('./routes/hseuno'); // NY IMPORT
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -104,17 +105,19 @@ app.get('/test-db', async (req, res) => {
     const productsResult = await query('SELECT COUNT(*) as ProductsCount FROM dbo.products');
     const blomsterImportResult = await query('SELECT COUNT(*) as BlomsterImportCount FROM dbo.blomster_import');
     const firmaResult = await query('SELECT COUNT(*) as FirmaCount FROM dbo.Firma');
-    const frihandelResult = await query('SELECT COUNT(*) as FrihandelCount FROM dbo.Frihandel'); // NY
+    const frihandelResult = await query('SELECT COUNT(*) as FrihandelCount FROM dbo.Frihandel');
+    const hseunoResult = await query('SELECT COUNT(*) as HSeunoCount FROM dbo.HSeuno'); // NY
     
     if (result.success && productsResult.success && blomsterImportResult.success && 
-        firmaResult.success && frihandelResult.success) {
+        firmaResult.success && frihandelResult.success && hseunoResult.success) {
       res.json({ 
         message: 'Database tilkobling OK',
         users: result.data[0].UserCount,
         products: productsResult.data[0].ProductsCount,
         blomster_import: blomsterImportResult.data[0].BlomsterImportCount,
         firma: firmaResult.data[0].FirmaCount,
-        frihandel: frihandelResult.data[0].FrihandelCount, // NY
+        frihandel: frihandelResult.data[0].FrihandelCount,
+        hseuno: hseunoResult.data[0].HSeunoCount, // NY
         server: process.env.DB_SERVER,
         database: process.env.DB_NAME
       });
@@ -142,7 +145,8 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/blomster-import', blomsterImportRoutes);
 app.use('/api/companies', companiesRoutes);
-app.use('/api/frihandel', frihandelRoutes); // NY ROUTE
+app.use('/api/frihandel', frihandelRoutes);
+app.use('/api/hseuno', hseunoRoutes); // NY ROUTE
 console.log('✅ API routes registrert');
 
 // Development route
@@ -199,6 +203,16 @@ app.get('/', (req, res) => {
         export: 'POST /api/frihandel/export',
         stats: 'GET /api/frihandel/stats/summary',
         filters: 'GET /api/frihandel/filters/unique-values'
+      },
+      hseuno: {
+        search: 'GET /api/hseuno/search',
+        single: 'GET /api/hseuno/:id',
+        create: 'POST /api/hseuno',
+        update: 'PUT /api/hseuno/:id',
+        delete: 'DELETE /api/hseuno/:id',
+        export: 'POST /api/hseuno/export',
+        stats: 'GET /api/hseuno/stats/summary',
+        filters: 'GET /api/hseuno/filters/unique-values'
       },
       database: {
         search: 'GET /api/database/search?blomst=navn',
@@ -261,6 +275,7 @@ app.use((req, res) => {
       'GET /api/companies/search',
       'GET /api/frihandel/search',
       'GET /api/frihandel/lookup/:landskode',
+      'GET /api/hseuno/search',
       'GET /api/database/search',
       'POST /api/upload/excel'
     ]
@@ -294,6 +309,7 @@ const server = app.listen(PORT, () => {
   console.log('   - /api/blomster-import → Blomster_import-tabellen');
   console.log('   - /api/companies       → Firma-tabellen');
   console.log('   - /api/frihandel       → Frihandel-tabellen');
+  console.log('   - /api/hseuno          → HSeuno-tabellen (HS-koder)');
   console.log('   - /api/database        → Database-søk');
   console.log('   - /api/upload          → Excel import/export');
   console.log('');

@@ -153,6 +153,12 @@ export default {
         route: '/frihandel-search'
       },
       {
+        title: 'HS-kode søk',
+        subtitle: 'Søk i HS-kode database (EU/Norge)',
+        icon: 'mdi-barcode',
+        route: '/hseuno-search'
+      },
+      {
         title: 'Importerte Produkter',
         subtitle: 'Se alle importerte produkter',
         icon: 'mdi-package-variant',

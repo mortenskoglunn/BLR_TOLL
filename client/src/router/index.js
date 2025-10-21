@@ -62,6 +62,12 @@ const routes = [
     name: 'FrihandelSearch',
     component: () => import('@/views/FrihandelSearch.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/hseuno-search',
+    name: 'HSeunoSearch',
+    component: () => import('@/views/HSeunoSearch.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
