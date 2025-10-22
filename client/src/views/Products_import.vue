@@ -1,17 +1,18 @@
 <template>
-  <v-container>
+  <v-container fluid class="pa-4">
     <v-row>
       <v-col cols="12">
         <h1 class="text-h4 mb-6">
           <v-icon left color="primary">mdi-package-variant</v-icon>
-          Importerte Produkter (blomster_import)
+          Importerte Produkter
         </h1>
       </v-col>
     </v-row>
 
+
     <!-- Statistikk kort -->
     <v-row>
-      <v-col cols="12" md="3">
+      <v-col cols="12" sm="6" md="4" lg="3">
         <v-card color="primary" dark>
           <v-card-text>
             <div class="text-h4">{{ totalProducts }}</div>
@@ -19,32 +20,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="3">
-        <v-card color="success" dark>
-          <v-card-text>
-            <div class="text-h4">{{ uniqueSuppliers }}</div>
-            <div class="text-caption">Leverandører</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3">
-        <v-card color="info" dark>
-          <v-card-text>
-            <div class="text-h4">{{ uniqueCategories }}</div>
-            <div class="text-caption">Kategorier</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="3">
-        <v-card color="warning" dark>
-          <v-card-text>
-            <div class="text-h4">{{ recentImports }}</div>
-            <div class="text-caption">Siste 24t</div>
-          </v-card-text>
-        </v-card>
-      </v-col>
     </v-row>
-
     <!-- Filter og søk -->
     <v-row class="mt-4">
       <v-col cols="12">
@@ -56,7 +32,7 @@
           
           <v-card-text>
             <v-row>
-              <v-col cols="12" md="4">
+              <v-col cols="12" md="6">
                 <v-text-field
                   v-model="search"
                   append-icon="mdi-magnify"
@@ -66,28 +42,6 @@
                   clearable
                   hint="Søk i Description, product_code, EAN..."
                 ></v-text-field>
-              </v-col>
-              
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="filterSupplier"
-                  :items="supplierOptions"
-                  label="Leverandør"
-                  outlined
-                  dense
-                  clearable
-                ></v-select>
-              </v-col>
-              
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="filterCategory"
-                  :items="categoryOptions"
-                  label="Kategori"
-                  outlined
-                  dense
-                  clearable
-                ></v-select>
               </v-col>
             </v-row>
             
@@ -135,7 +89,7 @@
                 'items-per-page-options': [10, 25, 50, 100]
               }"
               fixed-header
-              height="600px"
+              height="calc(100vh - 350px)"
             >
               <!-- Invoice Date -->
               <template v-slot:item.Invoice_Date="{ item }">
@@ -497,8 +451,6 @@ export default {
     const products = ref([])
     const loading = ref(false)
     const search = ref('')
-    const filterSupplier = ref(null)
-    const filterCategory = ref(null)
     const showDetailsDialog = ref(false)
     const selectedProduct = ref(null)
     const showClearDialog = ref(false)
@@ -589,41 +541,11 @@ export default {
     ]
     
     // Computed
-    const filteredProducts = computed(() => {
-      let filtered = products.value
-      
-      if (filterSupplier.value) {
-        filtered = filtered.filter(p => p.supplier_name === filterSupplier.value)
-      }
-      
-      if (filterCategory.value) {
-        filtered = filtered.filter(p => p.category === filterCategory.value)
-      }
-      
-      return filtered
-    })
+    const filteredProducts = computed(() => products.value)
     
-    const supplierOptions = computed(() => {
-      const suppliers = [...new Set(products.value.map(p => p.supplier_name).filter(Boolean))]
-      return suppliers.sort()
-    })
-    
-    const categoryOptions = computed(() => {
-      const categories = [...new Set(products.value.map(p => p.category).filter(Boolean))]
-      return categories.sort()
-    })
     
     const totalProducts = computed(() => products.value.length)
     
-    const uniqueSuppliers = computed(() => supplierOptions.value.length)
-    
-    const uniqueCategories = computed(() => categoryOptions.value.length)
-    
-    const recentImports = computed(() => {
-      const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
-      return products.value.filter(p => new Date(p.created_at) > yesterday).length
-    })
     
     // Methods
     const showNotification = (text, color = 'success', icon = 'mdi-check') => {
@@ -639,8 +561,6 @@ export default {
         const response = await axios.get('/api/blomster-import', {
           params: { 
             limit: 5000,
-            supplier_name: filterSupplier.value,
-            category: filterCategory.value
           }
         })
         
@@ -722,10 +642,6 @@ export default {
       try {
         const response = await axios.post('/api/upload/export', {
           source: 'blomster_import',
-          filters: {
-            supplier_name: filterSupplier.value,
-            category: filterCategory.value
-          }
         }, {
           responseType: 'blob'
         })
@@ -792,8 +708,6 @@ Kategori: ${product.category || '-'}
       products,
       loading,
       search,
-      filterSupplier,
-      filterCategory,
       showDetailsDialog,
       selectedProduct,
       showClearDialog,
@@ -802,12 +716,7 @@ Kategori: ${product.category || '-'}
       
       // Computed
       filteredProducts,
-      supplierOptions,
-      categoryOptions,
       totalProducts,
-      uniqueSuppliers,
-      uniqueCategories,
-      recentImports,
       
       // Snackbar
       showSnackbar,
