@@ -281,7 +281,7 @@
                   <v-col cols="5">
                     <v-select
                       v-model="mapping.database_field"
-                      :items="['Invoice_Date','Invoice_Number','Currency','Description','Pot_Size','Number_Of_Tray','Amount_per_Tray','Price','EAN','Tariff_Number','Country_Of_Origin_Raw','Weight_per_order_line','Gross_Weight_per_order_line','product_code','product_name','supplier_name','price_nok','quantity','unit','category','hs_code','country_of_origin','weight']"
+                      :items="['Invoice_Date','Invoice_Number','Currency','Description','Pot_Size','Number_Of_Tray','Amount_per_Tray','Price','EAN','Tariff_Number','Country_Of_Origin_Raw','Weight_per_order_line','Gross_Weight_per_order_line']"
                       label="Blomster_import felt"
                       outlined
                       dense
@@ -524,17 +524,7 @@ export default {
       'Tariff_Number',
       'Country_Of_Origin_Raw',
       'Weight_per_order_line',
-      'Gross_Weight_per_order_line',
-      'product_code',
-      'product_name',
-      'supplier_name',
-      'price_nok',
-      'quantity',
-      'unit',
-      'category',
-      'hs_code',
-      'country_of_origin',
-      'weight'
+      'Gross_Weight_per_order_line'
     ]
     
     const databaseFields = computed(() => databaseFieldsList)
@@ -553,17 +543,7 @@ export default {
       'Tariff_Number': 'Tariffnummer',
       'Country_Of_Origin_Raw': 'Opprinnelsesland (kode)',
       'Weight_per_order_line': 'Vekt per ordrelinje',
-      'Gross_Weight_per_order_line': 'Bruttovekt per ordrelinje',
-      'product_code': 'Mappes fra EAN',
-      'product_name': 'Mappes fra Description',
-      'supplier_name': 'Leverandørnavn',
-      'price_nok': 'Pris i NOK (konvertert)',
-      'quantity': 'Beregnet mengde',
-      'unit': 'Enhet (stk, kg, etc.)',
-      'category': 'Kategori',
-      'hs_code': 'HS-kode',
-      'country_of_origin': 'Opprinnelsesland (normalisert)',
-      'weight': 'Vekt'
+      'Gross_Weight_per_order_line': 'Bruttovekt per ordrelinje'
     }
     
     const getFieldDescription = (field) => {

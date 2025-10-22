@@ -40,7 +40,7 @@
                   outlined
                   dense
                   clearable
-                  hint="Søk i Description, product_code, EAN..."
+                  hint="Søk i Description, EAN..."
                 ></v-text-field>
               </v-col>
               <v-col cols="12" md="6" v-if="user && user.role === 'admin'">
@@ -273,38 +273,14 @@
                     <v-list-item-subtitle>Beskrivelse</v-list-item-subtitle>
                     <v-list-item-title class="text-wrap">{{ selectedProduct.Description || '-' }}</v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Produktkode</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.product_code || '-' }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
+                </v-list-item>                <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>EAN</v-list-item-subtitle>
                     <v-list-item-title>
                       <v-chip small color="primary">{{ selectedProduct.EAN || '-' }}</v-chip>
                     </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Leverandør</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.supplier_name || '-' }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Kategori</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.category || '-' }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
+                </v-list-item>              </v-list>
             </v-col>
 
             <!-- Høyre kolonne -->
@@ -319,18 +295,7 @@
                       {{ formatPrice(selectedProduct.Price) }} {{ selectedProduct.Currency || 'EUR' }}
                     </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Pris NOK</v-list-item-subtitle>
-                    <v-list-item-title>
-                      {{ formatPrice(selectedProduct.price_nok) }} NOK
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
+                </v-list-item>                <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Pottstørrelse</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.Pot_Size || '-' }}</v-list-item-title>
@@ -349,20 +314,7 @@
                     <v-list-item-subtitle>Antall per brett</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.Amount_per_Tray || '-' }}</v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Total mengde</v-list-item-subtitle>
-                    <v-list-item-title>
-                      <v-chip color="info">
-                        {{ selectedProduct.quantity || (selectedProduct.Number_Of_Tray * selectedProduct.Amount_per_Tray) || '-' }}
-                      </v-chip>
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-divider class="my-3"></v-divider>
+                </v-list-item>                <v-divider class="my-3"></v-divider>
                 <v-list-subheader>TOLL OG OPPRINNELSE</v-list-subheader>
 
                 <v-list-item>
@@ -372,30 +324,12 @@
                       <v-chip small color="green" dark>{{ selectedProduct.Tariff_Number || '-' }}</v-chip>
                     </v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>HS-kode</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.hs_code || '-' }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
+                </v-list-item>                <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Opprinnelsesland (rå)</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.Country_Of_Origin_Raw || '-' }}</v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Opprinnelsesland</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.country_of_origin || '-' }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-divider class="my-3"></v-divider>
+                </v-list-item>                <v-divider class="my-3"></v-divider>
                 <v-list-subheader>VEKT</v-list-subheader>
 
                 <v-list-item>
@@ -410,15 +344,7 @@
                     <v-list-item-subtitle>Bruttovekt per ordrelinje</v-list-item-subtitle>
                     <v-list-item-title>{{ selectedProduct.Gross_Weight_per_order_line || '-' }}</v-list-item-title>
                   </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Vekt</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.weight || '-' }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
+                </v-list-item>              </v-list>
             </v-col>
           </v-row>
 
@@ -535,12 +461,6 @@ export default {
         sortable: true
       },
       { 
-        title: 'Leverandør',
-        key: 'supplier_name',
-        align: 'start',
-        sortable: true
-      },
-      { 
         title: 'Pris',
         key: 'Price',
         align: 'end',
@@ -562,12 +482,6 @@ export default {
         title: 'Land',
         key: 'Country_Of_Origin_Raw',
         align: 'center',
-        sortable: true
-      },
-      { 
-        title: 'Kategori',
-        key: 'category',
-        align: 'start',
         sortable: true
       },
       { 
@@ -755,11 +669,9 @@ Fakturadato: ${formatDate(product.Invoice_Date)}
 Fakturanummer: ${product.Invoice_Number || '-'}
 Beskrivelse: ${product.Description || '-'}
 EAN: ${product.EAN || '-'}
-Leverandør: ${product.supplier_name || '-'}
 Pris: ${formatPrice(product.Price)} ${product.Currency || 'EUR'}
 Tariffnummer: ${product.Tariff_Number || '-'}
 Land: ${product.Country_Of_Origin_Raw || '-'}
-Kategori: ${product.category || '-'}
       `.trim()
       
       navigator.clipboard.writeText(text).then(() => {

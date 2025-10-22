@@ -18,15 +18,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const conditions = [];
     const params = { offset, limit };
     
-    if (filters.supplier_name) {
-      conditions.push('supplier_name = @supplierName');
-      params.supplierName = filters.supplier_name;
-    }
-    
-    if (filters.category) {
-      conditions.push('category = @category');
-      params.category = filters.category;
-    }
+    // Filtre for supplier_name og category er fjernet siden kolonnene ikke finnes lenger
     
     if (filters.import_batch_id) {
       conditions.push('import_batch_id = @importBatchId');
@@ -42,9 +34,7 @@ router.get('/', authenticateToken, async (req, res) => {
     if (filters.search) {
       conditions.push(`(
         Description LIKE @search 
-        OR product_code LIKE @search 
         OR EAN LIKE @search 
-        OR supplier_name LIKE @search
         OR Tariff_Number LIKE @search
       )`);
       params.search = `%${filters.search}%`;
@@ -104,16 +94,6 @@ router.get('/', authenticateToken, async (req, res) => {
         Country_Of_Origin_Raw,
         Weight_per_order_line,
         Gross_Weight_per_order_line,
-        product_code,
-        product_name,
-        supplier_name,
-        price_nok,
-        quantity,
-        unit,
-        category,
-        hs_code,
-        country_of_origin,
-        weight,
         import_log_id,
         import_batch_id,
         import_status,
@@ -421,9 +401,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       'Pot_Size', 'Number_Of_Tray', 'Amount_per_Tray', 'Price',
       'EAN', 'Tariff_Number', 'Country_Of_Origin_Raw',
       'Weight_per_order_line', 'Gross_Weight_per_order_line',
-      'product_code', 'product_name', 'supplier_name',
-      'price_nok', 'quantity', 'unit', 'category',
-      'hs_code', 'country_of_origin', 'weight', 'import_status'
+      'import_log_id', 'import_batch_id', 'import_status'
     ];
 
     for (const field of allowedFields) {
@@ -480,11 +458,8 @@ router.get('/stats/summary', authenticateToken, async (req, res) => {
     const statsQuery = await query(`
       SELECT 
         COUNT(*) as total_products,
-        COUNT(DISTINCT supplier_name) as unique_suppliers,
-        COUNT(DISTINCT category) as unique_categories,
         COUNT(DISTINCT import_batch_id) as unique_batches,
         COUNT(DISTINCT Tariff_Number) as unique_tariff_numbers,
-        SUM(CASE WHEN quantity IS NOT NULL THEN CAST(quantity AS INT) ELSE 0 END) as total_quantity,
         AVG(CASE WHEN Price IS NOT NULL THEN CAST(Price AS FLOAT) ELSE NULL END) as average_price,
         MIN(created_at) as first_import,
         MAX(created_at) as last_import
@@ -492,30 +467,7 @@ router.get('/stats/summary', authenticateToken, async (req, res) => {
       WHERE created_at >= DATEADD(day, -@daysBack, GETDATE())
     `, { daysBack });
 
-    // Statistikk per leverandør
-    const supplierStatsQuery = await query(`
-      SELECT TOP 10
-        supplier_name,
-        COUNT(*) as product_count,
-        SUM(CASE WHEN quantity IS NOT NULL THEN CAST(quantity AS INT) ELSE 0 END) as total_quantity
-      FROM dbo.blomster_import
-      WHERE created_at >= DATEADD(day, -@daysBack, GETDATE())
-        AND supplier_name IS NOT NULL
-      GROUP BY supplier_name
-      ORDER BY product_count DESC
-    `, { daysBack });
-
-    // Statistikk per kategori
-    const categoryStatsQuery = await query(`
-      SELECT 
-        category,
-        COUNT(*) as product_count
-      FROM dbo.blomster_import
-      WHERE created_at >= DATEADD(day, -@daysBack, GETDATE())
-        AND category IS NOT NULL
-      GROUP BY category
-      ORDER BY product_count DESC
-    `, { daysBack });
+    // Statistikk per leverandør og kategori er fjernet siden kolonnene ikke finnes lenger
 
     if (!statsQuery.success) {
       throw new Error('Statistikk query feilet');
@@ -524,9 +476,7 @@ router.get('/stats/summary', authenticateToken, async (req, res) => {
     res.json({
       success: true,
       period: `Last ${daysBack} days`,
-      stats: statsQuery.data[0],
-      supplierStats: supplierStatsQuery.success ? supplierStatsQuery.data : [],
-      categoryStats: categoryStatsQuery.success ? categoryStatsQuery.data : []
+      stats: statsQuery.data[0]
     });
 
   } catch (error) {
@@ -552,8 +502,8 @@ router.get('/filters/unique-values', authenticateToken, async (req, res) => {
     }
 
     const allowedFields = [
-      'supplier_name', 'category', 'Currency', 
-      'Country_Of_Origin_Raw', 'import_batch_id', 'import_status'
+      'Currency', 'Country_Of_Origin_Raw', 
+      'import_batch_id', 'import_status'
     ];
 
     if (!allowedFields.includes(field)) {

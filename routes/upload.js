@@ -132,8 +132,7 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
           import_batch_id: importBatchId,
           imported_by_user_id: userId,
           imported_by_username: username,
-          import_status: 'pending',
-          supplier_name: supplierName
+          import_status: 'pending'
         };
 
         // Map Excel-kolonner til database-felt
@@ -364,15 +363,7 @@ router.post('/export', authenticateToken, async (req, res) => {
     let queryStr = `SELECT * FROM ${tableName} WHERE 1=1`;
     const params = {};
 
-    if (filters?.supplier_name) {
-      queryStr += ' AND supplier_name = @supplierName';
-      params.supplierName = filters.supplier_name;
-    }
-
-    if (filters?.category) {
-      queryStr += ' AND category = @category';
-      params.category = filters.category;
-    }
+    // Filters for supplier_name and category removed (columns don't exist)
 
     if (filters?.import_batch_id) {
       queryStr += ' AND import_batch_id = @importBatchId';
