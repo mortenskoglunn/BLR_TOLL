@@ -52,43 +52,6 @@
             </v-btn>
           </v-form>
           
-          <!-- Test credentials info -->
-          <v-expansion-panels flat>
-            <v-expansion-panel>
-              <v-expansion-panel-header class="px-0">
-                <span class="text-caption">
-                  <v-icon small left>mdi-help-circle</v-icon>
-                  Test-brukere
-                </span>
-              </v-expansion-panel-header>
-              <v-expansion-panel-content class="px-0">
-                <v-simple-table dense>
-                  <tbody>
-                    <tr v-for="user in testUsers" :key="user.username">
-                      <td>{{ user.username }}</td>
-                      <td>{{ user.password }}</td>
-                      <td>
-                        <v-chip small :color="user.color" text-color="white">
-                          {{ user.role }}
-                        </v-chip>
-                      </td>
-                      <td>
-                        <v-btn 
-                          x-small 
-                          text 
-                          @click="setCredentials(user.username, user.password)"
-                          :disabled="loading"
-                        >
-                          Bruk
-                        </v-btn>
-                      </td>
-                    </tr>
-                  </tbody>
-                </v-simple-table>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
-          
           <!-- Error message -->
           <v-alert
             v-if="error"
@@ -124,27 +87,6 @@ export default {
       password: ''
     })
     
-    const testUsers = ref([
-      {
-        username: 'admin',
-        password: 'admin123',
-        role: 'Administrator',
-        color: 'red'
-      },
-      {
-        username: 'bruker',
-        password: 'bruker123',
-        role: 'Bruker',
-        color: 'blue'
-      },
-      {
-        username: 'viewer',
-        password: 'viewer123',
-        role: 'Leser',
-        color: 'green'
-      }
-    ])
-    
     const usernameRules = [
       v => !!v || 'Brukernavn er påkrevd',
       v => v.length >= 3 || 'Brukernavn må være minst 3 tegn'
@@ -154,12 +96,6 @@ export default {
       v => !!v || 'Passord er påkrevd',
       v => v.length >= 6 || 'Passord må være minst 6 tegn'
     ]
-    
-    const setCredentials = (username, password) => {
-      credentials.username = username
-      credentials.password = password
-      error.value = ''
-    }
     
     const login = async () => {
       if (!form.value.validate()) return
@@ -213,10 +149,8 @@ export default {
       error,
       form,
       credentials,
-      testUsers,
       usernameRules,
       passwordRules,
-      setCredentials,
       login
     }
   }
