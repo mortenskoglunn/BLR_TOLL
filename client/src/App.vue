@@ -194,6 +194,14 @@ export default {
     const getFilteredNavigationItems = () => {
       if (!user.value) return []
       
+      // Hvis brukeren IKKE er admin, vis kun Excel Import og Importerte Produkter
+      if (user.value.role !== 'admin') {
+        return navigationItems.value.filter(item => {
+          return item.route === '/excel-import' || item.route === '/products-import'
+        })
+      }
+      
+      // Admin ser alt
       return navigationItems.value.filter(item => {
         // Hvis item krever en rolle, sjekk om brukeren har den
         if (item.requiresRole) {
@@ -216,7 +224,7 @@ export default {
       localStorage.setItem('toll_user', JSON.stringify(userData))
       showNotification(`Velkommen, ${userData.username}!`, 'success', 'mdi-check')
       
-      // Redirect to dashboard
+      // Redirect to dashboard for alle
       router.push('/dashboard')
     }
     

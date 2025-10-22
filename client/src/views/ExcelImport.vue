@@ -230,6 +230,17 @@ export default {
   setup() {
     const router = useRouter()
     
+    // Hent bruker fra localStorage
+    const user = ref(null)
+    try {
+      const savedUser = localStorage.getItem('toll_user')
+      if (savedUser) {
+        user.value = JSON.parse(savedUser)
+      }
+    } catch (error) {
+      console.error('Error parsing user:', error)
+    }
+    
     // State
     const templates = ref([])
     const loadingTemplates = ref(false)
@@ -325,6 +336,8 @@ export default {
         formData.append('supplierName', selectedTemplate.value.supplier_name)
         formData.append('hasHeader', selectedTemplate.value.has_header)
         formData.append('columnMappings', JSON.stringify(selectedTemplate.value.column_mappings))
+        formData.append('userId', user.value?.id || 0)
+        formData.append('username', user.value?.username || 'unknown')
         
         const response = await axios.post('/api/upload/excel', formData, {
           headers: {

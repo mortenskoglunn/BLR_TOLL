@@ -37,8 +37,8 @@
       </v-col>
     </v-row>
 
-    <!-- Recent Activity -->
-    <v-row class="mt-6">
+    <!-- Recent Activity (kun for admin) -->
+    <v-row class="mt-6" v-if="user && user.role === 'admin'">
       <v-col cols="12" md="8">
         <v-card>
           <v-card-title>
@@ -92,37 +92,61 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 
 export default {
   name: 'DashboardView',
   setup() {
+    // Hent bruker fra localStorage
+    const user = ref(null)
+    
+    try {
+      const savedUser = localStorage.getItem('toll_user')
+      if (savedUser) {
+        user.value = JSON.parse(savedUser)
+      }
+    } catch (error) {
+      console.error('Error parsing user:', error)
+    }
+    
     // Raw stats data fra API
     const statsData = ref({
       total_products: 0
     })
     
-    const quickActions = ref([
+    const allQuickActions = ref([
       { 
         title: 'Import Excel', 
         route: '/excel-import', 
         icon: 'mdi-file-excel', 
-        color: 'primary' 
+        color: 'primary',
+        allowedRoles: ['admin', 'user', 'viewer']
       },
       { 
         title: 'Produktsøk', 
         route: '/product-search', 
         icon: 'mdi-database-search', 
-        color: 'success' 
+        color: 'success',
+        allowedRoles: ['admin']
       },
       { 
         title: 'Importerte Produkter', 
         route: '/products-import', 
         icon: 'mdi-package-variant', 
-        color: 'info' 
+        color: 'info',
+        allowedRoles: ['admin', 'user', 'viewer']
       }
     ])
+    
+    // Filtrer quickActions basert på brukerrolle
+    const quickActions = computed(() => {
+      if (!user.value) return []
+      
+      return allQuickActions.value.filter(action => {
+        return action.allowedRoles.includes(user.value.role)
+      })
+    })
     
     const recentActivity = ref([
       { 
@@ -172,6 +196,7 @@ export default {
     })
     
     return {
+      user,
       quickActions,
       recentActivity
     }

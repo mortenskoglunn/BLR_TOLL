@@ -61,6 +61,10 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
     const supplierName = req.body.supplierName;
     const hasHeader = req.body.hasHeader === 'true';
     const columnMappings = JSON.parse(req.body.columnMappings || '[]');
+    
+    // Hent brukerinfo fra request (sendt fra frontend) eller fra JWT token
+    const userId = req.body.userId || req.user.userId || null;
+    const username = req.body.username || req.user.username || 'unknown';
 
     // Generer unik batch ID for denne importen
     importBatchId = `BATCH-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -70,6 +74,7 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
     console.log('📑 Header:', hasHeader ? 'Ja' : 'Nei');
     console.log('🗂️ Kolonner:', columnMappings.length);
     console.log('🔖 Batch ID:', importBatchId);
+    console.log('👤 Importert av:', username, '(ID:', userId, ')');
 
     // Les Excel-fil
     const workbook = XLSX.readFile(req.file.path);
@@ -125,6 +130,8 @@ router.post('/excel', authenticateToken, upload.single('file'), async (req, res)
         const importData = {
           import_log_id: importLogId,
           import_batch_id: importBatchId,
+          imported_by_user_id: userId,
+          imported_by_username: username,
           import_status: 'pending',
           supplier_name: supplierName
         };

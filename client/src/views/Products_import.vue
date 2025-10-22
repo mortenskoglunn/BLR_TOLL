@@ -43,6 +43,18 @@
                   hint="Søk i Description, product_code, EAN..."
                 ></v-text-field>
               </v-col>
+              <v-col cols="12" md="6" v-if="user && user.role === 'admin'">
+                <v-select
+                  v-model="filterUser"
+                  :items="userFilterOptions"
+                  label="Filtrer på bruker"
+                  outlined
+                  dense
+                  hint="Velg hvilke brukeres produkter du vil se"
+                  persistent-hint
+                  @change="loadProducts"
+                ></v-select>
+              </v-col>
             </v-row>
             
             <v-btn color="primary" @click="loadProducts" :loading="loading">
@@ -173,11 +185,30 @@
 
         <v-card-text class="pt-4">
           <v-alert type="warning" outlined>
-            <strong>ADVARSEL:</strong> Dette vil slette ALLE {{ products.length }} produkter fra blomster_import-tabellen for din bruker.
+            <strong>ADVARSEL:</strong> Dette vil slette produkter fra blomster_import-tabellen.
           </v-alert>
 
+          <!-- Admin: Velg hvilke produkter som skal slettes -->
+          <div v-if="user && user.role === 'admin'" class="mt-4">
+            <v-select
+              v-model="clearUserFilter"
+              :items="clearUserOptions"
+              label="Hvilke produkter skal slettes?"
+              outlined
+              dense
+            ></v-select>
+            <p class="text-caption grey--text">
+              <strong>Mine produkter:</strong> Sletter kun dine egne produkter<br>
+              <strong>Alle produkter:</strong> Sletter alle produkter fra alle brukere
+            </p>
+          </div>
+
           <p class="mt-4">
-            Denne handlingen kan ikke angres. Er du sikker på at du vil fortsette?
+            <strong>{{ products.length }}</strong> produkter vil bli slettet.
+          </p>
+          
+          <p class="red--text">
+            Denne handlingen kan ikke angres.
           </p>
         </v-card-text>
 
@@ -202,17 +233,17 @@
     <v-dialog v-model="showDetailsDialog" max-width="900px" scrollable>
       <v-card v-if="selectedProduct">
         <v-card-title class="primary white--text">
-          <v-icon left color="white">mdi-package-variant</v-icon>
-          Produktdetaljer - ID: {{ selectedProduct.id }}
+          <v-icon left color="white">mdi-information</v-icon>
+          Produktdetaljer
         </v-card-title>
 
-        <v-card-text class="pt-4" style="max-height: 70vh;">
+        <v-card-text class="pt-4">
           <v-row>
             <!-- Venstre kolonne -->
             <v-col cols="12" md="6">
               <v-list dense>
                 <v-list-subheader>FAKTURA INFORMASJON</v-list-subheader>
-                
+
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Fakturadato</v-list-item-subtitle>
@@ -230,7 +261,7 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-subtitle>Valuta</v-list-item-subtitle>
-                    <v-list-item-title>{{ selectedProduct.Currency || '-' }}</v-list-item-title>
+                    <v-list-item-title>{{ selectedProduct.Currency || 'EUR' }}</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
 
@@ -441,16 +472,30 @@
 
 <script>
 /* eslint-disable */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 
 export default {
   name: 'ProductsImportView',
   setup() {
+    // Hent bruker fra localStorage
+    const user = ref(null)
+    try {
+      const savedUser = localStorage.getItem('toll_user')
+      if (savedUser) {
+        user.value = JSON.parse(savedUser)
+      }
+    } catch (error) {
+      console.error('Error parsing user:', error)
+    }
+    
     // State
     const products = ref([])
     const loading = ref(false)
     const search = ref('')
+    // FIKSET: Admin ser alle produkter som standard, andre ser mine produkter
+    const filterUser = ref(user.value?.role === 'admin' ? 'all' : 'mine')
+    const clearUserFilter = ref('mine')
     const showDetailsDialog = ref(false)
     const selectedProduct = ref(null)
     const showClearDialog = ref(false)
@@ -541,11 +586,30 @@ export default {
     ]
     
     // Computed
+    const clearUserOptions = computed(() => {
+      if (!user.value || user.value.role !== 'admin') {
+        return [{ title: 'Mine produkter', value: 'mine' }]
+      }
+      return [
+        { title: 'Mine produkter', value: 'mine' },
+        { title: 'Alle produkter', value: 'all' }
+      ]
+    })
+    
+    const userFilterOptions = computed(() => {
+      if (!user.value || user.value.role !== 'admin') {
+        return []
+      }
+      
+      return [
+        { title: 'Mine produkter', value: 'mine' },
+        { title: 'Alle produkter', value: 'all' },
+      ]
+    })
+    
     const filteredProducts = computed(() => products.value)
     
-    
     const totalProducts = computed(() => products.value.length)
-    
     
     // Methods
     const showNotification = (text, color = 'success', icon = 'mdi-check') => {
@@ -558,17 +622,37 @@ export default {
     const loadProducts = async () => {
       loading.value = true
       try {
-        const response = await axios.get('/api/blomster-import', {
-          params: { 
-            limit: 5000,
+        const params = { 
+          limit: 5000,
+        }
+        
+        // FIKSET: Legg til brukerfiltrering
+        if (user.value) {
+          if (user.value.role === 'admin') {
+            // Admin: Bruk filterUser eller default til 'all'
+            const filter = filterUser.value || 'all'
+            params.imported_by_user = filter
+          } else {
+            // Non-admin: Alltid 'mine'
+            params.imported_by_user = 'mine'
           }
-        })
+        }
+        
+        // DEBUGGING LOGS
+        console.log('🔍 Loading products with params:', params)
+        console.log('👤 User:', user.value)
+        console.log('🔧 Filter:', filterUser.value)
+        
+        const response = await axios.get('/api/blomster-import', { params })
+        
+        console.log('📦 Response:', response.data)
         
         if (response.data.success) {
           products.value = response.data.products
           showNotification(`${products.value.length} produkter lastet fra blomster_import`, 'info', 'mdi-package')
         }
       } catch (error) {
+        console.error('❌ Load products error:', error)
         showNotification(
           `Feil ved lasting av produkter: ${error.response?.data?.message || error.message}`,
           'error',
@@ -611,20 +695,20 @@ export default {
     const clearAllProducts = async () => {
       clearingProducts.value = true
       try {
-        // Kall backend endpoint for å slette alle produkter
+        const clearAll = user.value?.role === 'admin' && clearUserFilter.value === 'all'
+        
         const response = await axios.post('/api/blomster-import/clear', {
-          clearAll: true
+          clearAll: clearAll
         })
         
         if (response.data.success) {
-          showNotification(
-            `${response.data.deletedCount} produkter slettet fra tabellen`, 
-            'success', 
-            'mdi-delete-sweep'
-          )
+          const message = clearAll 
+            ? `${response.data.deletedCount} produkter slettet fra alle brukere` 
+            : `${response.data.deletedCount} av dine produkter slettet`
+          
+          showNotification(message, 'success', 'mdi-delete-sweep')
           products.value = []
           closeClearDialog()
-          // Last på nytt for å oppdatere statistikk
           loadProducts()
         }
       } catch (error) {
@@ -698,6 +782,11 @@ Kategori: ${product.category || '-'}
       return new Date(dateString).toLocaleString('no-NO')
     }
     
+    // Watch filterUser for debugging
+    watch(filterUser, (newVal, oldVal) => {
+      console.log('🔄 Filter changed:', { old: oldVal, new: newVal })
+    })
+    
     // Load products on mount
     onMounted(() => {
       loadProducts()
@@ -708,6 +797,9 @@ Kategori: ${product.category || '-'}
       products,
       loading,
       search,
+      filterUser,
+      clearUserFilter,
+      user,
       showDetailsDialog,
       selectedProduct,
       showClearDialog,
@@ -715,6 +807,8 @@ Kategori: ${product.category || '-'}
       headers,
       
       // Computed
+      clearUserOptions,
+      userFilterOptions,
       filteredProducts,
       totalProducts,
       
